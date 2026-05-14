@@ -18,8 +18,9 @@ public class Shooter {
                 new MotorEx(hwMap, "FlywheelRight", Motor.GoBILDA.NONE)
         );
         flywheels.setRunMode(Motor.RunMode.VelocityControl);
+
         flywheels.setVeloCoefficients(0.0015, 0, 0);
-        flywheels.setFeedforwardCoefficients(0, 1.45); //!previously kFMultiplier so idk
+        flywheels.setFeedforwardCoefficients(0, 1.45); //!use recalc
 
         gate = hwMap.get(ServoEx.class, "Gate");
         gate.setInverted(true);
@@ -28,8 +29,8 @@ public class Shooter {
         hood.setInverted(true);
     }
 
-    public void setVelo(double targetRPM){
-        
+    public void setRPM(double targetRPM){
+        flywheels.set(targetRPM);
     }
 
     public void target(double distance){
