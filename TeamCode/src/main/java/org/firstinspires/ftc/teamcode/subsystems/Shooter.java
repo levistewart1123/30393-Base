@@ -55,8 +55,6 @@ public class Shooter {
         state = states.AUTOMATIC;
     }
 
-    //testing
-
 //?uncertain if this will be used, commenting it out now
 
 //    public void periodic(double distance){
