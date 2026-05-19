@@ -7,6 +7,8 @@ import com.seattlesolvers.solverslib.hardware.motors.MotorGroup;
 import com.seattlesolvers.solverslib.hardware.servos.ServoEx;
 import com.seattlesolvers.solverslib.util.InterpLUT;
 
+import org.firstinspires.ftc.teamcode.Constants;
+
 import java.util.Objects;
 
 public class Shooter {
@@ -54,6 +56,23 @@ public class Shooter {
 
         state = states.AUTOMATIC;
     }
+
+    public void openGate(){
+        gate.set(Constants.GATE_OPEN_POS);
+    }
+
+    public void closeGate(){
+        gate.set(Constants.GATE_CLOSED_POS);
+    }
+
+    public boolean gateIsOpen(){
+        return gate.get() == Constants.GATE_OPEN_POS; //FIXME this doesn't use the encoder I think
+    }
+    public boolean gateIsClosed(){
+        return gate.get() == Constants.GATE_CLOSED_POS; //FIXME this doesn't use the encoder I think
+    }
+
+    //testing
 
 //?uncertain if this will be used, commenting it out now
 
