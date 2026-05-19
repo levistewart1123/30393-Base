@@ -13,6 +13,7 @@ public class Intake {
         intake.setCachingTolerance(0.02); //double check this is ok
     }
 
+
     public void spinIn(){
         intake.set(1);
     }
@@ -22,5 +23,10 @@ public class Intake {
     public void stop(){
         intake.set(0);
     }
+
+    public double getSpeed(){
+        return intake.get();
+    }
+
 
 }
