@@ -10,7 +10,7 @@ public class Intake {
 
     public void init(HardwareMap hwMap) {
         intake = new MotorEx(hwMap, "Intake", Motor.GoBILDA.RPM_1150);
-        intake.setCachingTolerance(0.02); //double check this is ok
+        intake.setCachingTolerance(0.02); //robot todo double check this is ok
     }
 
 

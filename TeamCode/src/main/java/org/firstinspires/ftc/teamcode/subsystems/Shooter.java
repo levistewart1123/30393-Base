@@ -7,25 +7,23 @@ import com.seattlesolvers.solverslib.hardware.motors.MotorGroup;
 import com.seattlesolvers.solverslib.hardware.servos.ServoEx;
 import com.seattlesolvers.solverslib.util.InterpLUT;
 
-import org.firstinspires.ftc.teamcode.Constants;
-
-import java.util.Objects;
+import org.firstinspires.ftc.teamcode.Paths;
 
 public class Shooter {
 
-    public enum states{
+    public enum States {
         AUTOMATIC,
         FIXED,
         OFF
     }
+    States state = States.AUTOMATIC;
 
-    states state = states.AUTOMATIC;
-
+    final double GATE_OPEN_POS = 1;//robot todo fix these
+    final double GATE_CLOSED_POS = 0;
     private MotorGroup flywheels;
     private ServoEx gate;
     private ServoEx hood;
     final double FIXED_SPEED = 0.5;
-
     public double targetRPM = 0;
 
     InterpLUT velocities = new InterpLUT();
@@ -41,7 +39,7 @@ public class Shooter {
         flywheels.setRunMode(Motor.RunMode.VelocityControl);
 
         flywheels.setVeloCoefficients(0.0015, 0, 0);
-        flywheels.setFeedforwardCoefficients(0, 1.45); //!use recalc
+        flywheels.setFeedforwardCoefficients(0, 1.45); //robot todo use recalc
 
         gate = hwMap.get(ServoEx.class, "Gate");
         gate.setInverted(true);
@@ -49,53 +47,50 @@ public class Shooter {
         hood = hwMap.get(ServoEx.class, "Hood");
         hood.setInverted(true);
 
-        velocities.add(1, 1); //TODO: replace this
+        velocities.add(1, 1); //robot todo replace these
         velocities.createLUT();
-        angles.add(1, 1); //TODO: replace this
+        angles.add(1, 1);
         angles.createLUT();
 
-        state = states.AUTOMATIC;
+        state = States.AUTOMATIC;
     }
 
     public void openGate(){
-        gate.set(Constants.GATE_OPEN_POS);
+        gate.set(GATE_OPEN_POS);
     }
 
     public void closeGate(){
-        gate.set(Constants.GATE_CLOSED_POS);
+        gate.set(GATE_CLOSED_POS);
     }
 
     public boolean gateIsOpen(){
-        return gate.get() == Constants.GATE_OPEN_POS; //FIXME this doesn't use the encoder I think
+        return gate.get() == GATE_OPEN_POS; //todo these don't use the encoder I think
     }
     public boolean gateIsClosed(){
-        return gate.get() == Constants.GATE_CLOSED_POS; //FIXME this doesn't use the encoder I think
+        return gate.get() == GATE_CLOSED_POS;
     }
 
-    //testing
 
-//?uncertain if this will be used, commenting it out now
+    public void periodic(double distance){
+        if (state == States.AUTOMATIC) {
+            targetRPM = velocities.get(distance);
+            flywheels.set(targetRPM / flywheels.getMaxRPM());
+            hood.set(angles.get(distance));
+        }
+    }
+    public void changeState(States state){
+        this.state = state;
+        switch(state){
+            case OFF:
+                flywheels.set(0);
+                break;
+            case FIXED:
+                flywheels.set(FIXED_SPEED);
+                hood.set(0);
+                break;
+        }
 
-//    public void periodic(double distance){
-//        if (state == states.AUTOMATIC) {
-//            targetRPM = velocities.get(distance);
-//            flywheels.set(targetRPM / flywheels.getMaxRPM());
-//            hood.set(angles.get(distance));
-//        }
-//    }
-//    public void changeState(states state){
-//        this.state = state;
-//        switch(state){
-//            case OFF:
-//                flywheels.set(0);
-//                break;
-//            case FIXED:
-//                flywheels.set(FIXED_SPEED);
-//                hood.set(0);
-//                break;
-//        }
-//
-//    }
+    }
 
 
 }
