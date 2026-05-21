@@ -27,11 +27,16 @@ public class TeleOp extends OpMode {
 
     @Override
     public void loop() {
+        if (gamepad1.bWasPressed()){
+            robot.autoAiming = !robot.autoAiming;
+        }
         if (gamepad1.aWasPressed()){
             robot.shoot.schedule();
+        } else if (!robot.isShooting && !robot.automatedDrive) {
+            robot.handleManualDrive.schedule();
         }
 
-        robot.periodic();
+        robot.periodic(gamepad1);
         Scheduler.execute();
     }
 }

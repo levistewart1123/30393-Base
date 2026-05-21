@@ -1,12 +1,17 @@
 package org.firstinspires.ftc.teamcode;
 
+import static com.pedropathing.ivy.commands.Commands.conditional;
+import static com.pedropathing.ivy.commands.Commands.infinite;
 import static com.pedropathing.ivy.commands.Commands.instant;
 import static com.pedropathing.ivy.commands.Commands.match;
+import static com.pedropathing.ivy.pedro.PedroCommands.follow;
 
 import com.pedropathing.follower.Follower;
 import com.pedropathing.geometry.Pose;
 import com.pedropathing.ivy.Command;
+import com.pedropathing.paths.PathChain;
 import com.qualcomm.robotcore.hardware.Gamepad;
+import com.seattlesolvers.solverslib.controller.PIDFController;
 import com.seattlesolvers.solverslib.util.Timing;
 
 import org.firstinspires.ftc.teamcode.subsystems.BeamBreaks;
@@ -19,7 +24,7 @@ import java.util.concurrent.TimeUnit;
 
 public class Robot {
 
-    enum DriveState{
+    public enum DriveState{
         NORMAL,
         AIMING,
         AUTOMATED,
@@ -39,9 +44,12 @@ public class Robot {
     boolean usingAutoGate = true;
     public Pose goalPose;
     double forwardInput, rightInput, rotateInput = 0;
+    public boolean isShooting = false;
+    public boolean automatedDrive = false;
 
     Command shoot = Command.build() //might want to make this 2 separate commands if I see any issues
             .setStart(() -> {
+                isShooting = true;
                 intake.stop();
                 waitForOpen = shooter.gateIsClosed();
                 if (waitForOpen){
@@ -64,22 +72,28 @@ public class Robot {
             .setEnd(endCondition -> {
                 intake.stop();
                 shooter.closeGate();
+                isShooting = false;
             })
             .requiring(intake, shooter)
             //todo add conflicting behaviors here and priority
             ;
 
     public Command handleNormalDrive(){
-        return instant(()-> f.setTeleOpDrive(forwardInput, rightInput, rotateInput));
+        return infinite(()-> f.setTeleOpDrive(forwardInput, rightInput, rotateInput));
     }
     public Command handleAimingDrive(){
-        return instant(()-> f.setTeleOpDrive(forwardInput, rightInput, rotateInput));
+        return infinite(()-> f.setTeleOpDrive(forwardInput, rightInput, getAimingPIDFOutput()));
+    }
+    public Command driveOff = instant(() -> f.setTeleOpDrive(0, 0, 0));
+    public Command followPath(PathChain pathChain){
+        return (driveOff).then(follow(f, pathChain));
     }
 
-
-
-
-
+    public Command handleManualDrive = conditional(
+            () -> autoAiming,
+            handleNormalDrive(),
+            handleAimingDrive()
+    );
 
     public void init(boolean red){
         intake = new Intake();
@@ -91,23 +105,21 @@ public class Robot {
             goalPose = Paths.blueGoal;
         }
         f.setStartingPose(PoseSaver.endPose);
-
-        EnumMap<DriveState, Command> cases = new EnumMap<>(DriveState.class);
-        cases.put(DriveState.NORMAL, handleNormalDrive());
-//        cases.put(DriveState.AIMING, );
-//        cases.put(DriveState.AUTOMATED, );
-//        cases.put(DriveState.OFF, );
-        Command handleDrive = match(() -> driveState, cases);
     }
 
     public double getDistToGoal(){
         double xDiff = f.getPose().getX() - goalPose.getX();
         double yDiff = f.getPose().getY() - goalPose.getY();
-        return Math.sqrt(Math.pow(xDiff, 2) + Math.pow(yDiff, 2)); //robot todo check this
+        return Math.sqrt(Math.pow(xDiff, 2) + Math.pow(yDiff, 2)); //lab todo check this
     }
 
-    public void periodic(){
+    public void periodic(Gamepad gamepad){
         f.update();
+
+        forwardInput = gamepad.left_stick_y;
+        rightInput = gamepad.left_stick_x;
+        rotateInput = gamepad.right_stick_x;//lab todo check directions with old code
+
         shooter.periodic(getDistToGoal());
         beamBreaks.periodic(shooting, autoAiming);
         if (usingAutoGate){
@@ -127,12 +139,15 @@ public class Robot {
         f.setTeleOpDrive(forward, right, rotate);
     }
 
-    public void updateMoveInput(Gamepad gamepad){ //lab todo check directions with old code
-        forwardInput = gamepad.left_stick_y;
-        rightInput = gamepad.left_stick_x;
-        rotateInput = gamepad.right_stick_x;
-    }
+    public double getAimingPIDFOutput(){
+        double xDiff = f.getPose().getX() - goalPose.getX();
+        double yDiff = f.getPose().getY() - goalPose.getY();
+        double targetAngle = Math.atan2(xDiff, yDiff);
+        double error = f.getHeading() - targetAngle; //lab todo check this
 
+        PIDFController headingPIDF = new PIDFController(0, 0, 0, 0); //robot todo tune this or base it off of pedro
+        return headingPIDF.calculate(error); //robot todo ensure radians and degrees don't mix, this whole thing really needs testing
+    }
 
 
 }
