@@ -1,6 +1,5 @@
 package org.firstinspires.ftc.teamcode;
 
-import com.pedropathing.ivy.Scheduler;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 
 /**
@@ -17,7 +16,6 @@ public class TeleOp extends OpMode {
     @Override
     public void init() {
         robot.init(red);
-        Scheduler.reset();
     }
 
     @Override
@@ -27,16 +25,17 @@ public class TeleOp extends OpMode {
 
     @Override
     public void loop() {
+        robot.periodic(gamepad1);
         if (gamepad1.bWasPressed()){
-            robot.autoAiming = !robot.autoAiming;
+            robot.toggleAiming();
+        }
+        if (gamepad1.xWasPressed()){
+            robot.startShoot();
         }
         if (gamepad1.aWasPressed()){
-            robot.shoot.schedule();
-        } else if (!robot.isShooting && !robot.automatedDrive) {
-            robot.handleManualDrive.schedule();
+            robot.slowDrive = !robot.slowDrive;
         }
+        //lab todo add automated drive controls from old code
 
-        robot.periodic(gamepad1);
-        Scheduler.execute();
     }
 }

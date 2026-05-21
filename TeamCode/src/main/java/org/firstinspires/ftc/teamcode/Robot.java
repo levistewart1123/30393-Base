@@ -3,7 +3,6 @@ package org.firstinspires.ftc.teamcode;
 import static com.pedropathing.ivy.commands.Commands.conditional;
 import static com.pedropathing.ivy.commands.Commands.infinite;
 import static com.pedropathing.ivy.commands.Commands.instant;
-import static com.pedropathing.ivy.commands.Commands.match;
 import static com.pedropathing.ivy.pedro.PedroCommands.follow;
 
 import com.pedropathing.follower.Follower;
@@ -19,7 +18,6 @@ import org.firstinspires.ftc.teamcode.subsystems.Intake;
 import org.firstinspires.ftc.teamcode.subsystems.Shooter;
 
 
-import java.util.EnumMap;
 import java.util.concurrent.TimeUnit;
 
 public class Robot {
@@ -30,8 +28,14 @@ public class Robot {
         AUTOMATED,
         OFF
     }
-
+    public enum IntakeState {
+        IN,
+        OUT,
+        OFF,
+        SHOOTING
+    }
     DriveState driveState = DriveState.NORMAL;
+    IntakeState intakeState = IntakeState.OFF;
 
     public Intake intake;
     public Shooter shooter;
@@ -39,13 +43,12 @@ public class Robot {
     public BeamBreaks beamBreaks;
     Timing.Timer shootTimer = new Timing.Timer(700, TimeUnit.MILLISECONDS);
     boolean waitForOpen;
-    public boolean shooting = false;
     public boolean autoAiming = false;
     boolean usingAutoGate = true;
     public Pose goalPose;
     double forwardInput, rightInput, rotateInput = 0;
     public boolean isShooting = false;
-    public boolean automatedDrive = false;
+    public boolean slowDrive = false;
 
     Command shoot = Command.build() //might want to make this 2 separate commands if I see any issues
             .setStart(() -> {
@@ -110,33 +113,101 @@ public class Robot {
     public double getDistToGoal(){
         double xDiff = f.getPose().getX() - goalPose.getX();
         double yDiff = f.getPose().getY() - goalPose.getY();
-        return Math.sqrt(Math.pow(xDiff, 2) + Math.pow(yDiff, 2)); //lab todo check this
+        return Math.sqrt(Math.pow(xDiff, 2) + Math.pow(yDiff, 2)); //lab todo aouble check this
     }
 
     public void periodic(Gamepad gamepad){
         f.update();
 
+        if (isShooting) {
+            handleShoot();
+        }
+
         forwardInput = gamepad.left_stick_y;
         rightInput = gamepad.left_stick_x;
         rotateInput = gamepad.right_stick_x;//lab todo check directions with old code
+        if (slowDrive){
+            forwardInput *= 0.2;
+            rightInput *= 0.2;
+            rotateInput *= 0.2;
+        }
+        switch (driveState){
+            case NORMAL:
+                f.setTeleOpDrive(forwardInput, rightInput, rotateInput);
+                break;
+            case AIMING:
+                f.setTeleOpDrive(forwardInput, rightInput, getAimingPIDFOutput());
+                break;
+            case AUTOMATED:
+                if (!f.isBusy()){
+                    setDriveStateManual(DriveState.NORMAL);
+                }
+                break;
+            case OFF:
+                f.setTeleOpDrive(0,0,0);
+                break;
+        }
+
+        switch (intakeState){
+            case IN:
+                intake.spinIn();
+                break;
+            case OUT:
+                intake.spinOut();
+                break;
+            case OFF:
+                intake.stop();
+            case SHOOTING:
+                break;
+        }
 
         shooter.periodic(getDistToGoal());
-        beamBreaks.periodic(shooting, autoAiming);
+        beamBreaks.periodic(isShooting, autoAiming);
         if (usingAutoGate){
             autoGate();
         }
     }
 
+    public void setIntakeState(IntakeState intakeState){
+        this.intakeState = intakeState;
+    }
+    public void setDriveStateManual(DriveState driveState) {
+        if (this.driveState != driveState && driveState != DriveState.AUTOMATED) {
+            this.driveState = driveState;
+            switch (driveState) {
+                case NORMAL:
+                case AIMING:
+                    f.startTeleOpDrive();
+                    break;
+                case OFF:
+                    f.setTeleOpDrive(0, 0, 0);
+                    break;
+            }
+        }
+    }
+    public void setDriveStateAutomated(PathChain pathChain){
+        if (this.driveState != DriveState.AUTOMATED) {
+            this.driveState = DriveState.AUTOMATED;
+            f.setTeleOpDrive(0, 0, 0);
+            f.followPath(pathChain);
+        }
+    }
+
+    public void toggleAiming(){
+        if (driveState == DriveState.AIMING){
+            setDriveStateManual(DriveState.NORMAL);
+        } else if (driveState == DriveState.NORMAL) {
+            setDriveStateManual(DriveState.AIMING);
+        }
+    }
+
+
     public void autoGate(){
-        if (beamBreaks.getBallCount() < 3 && !shooting){
+        if (beamBreaks.getBallCount() < 3 && !isShooting){
             shooter.closeGate();
         } else {
             shooter.openGate();
         }
-    }
-
-    public void drive(double forward, double right, double rotate){
-        f.setTeleOpDrive(forward, right, rotate);
     }
 
     public double getAimingPIDFOutput(){
@@ -145,8 +216,43 @@ public class Robot {
         double targetAngle = Math.atan2(xDiff, yDiff);
         double error = f.getHeading() - targetAngle; //lab todo check this
 
-        PIDFController headingPIDF = new PIDFController(0, 0, 0, 0); //robot todo tune this or base it off of pedro
+        PIDFController headingPIDF = new PIDFController(0, 0, 0, 0); //lab todo tune this or base it off of pedro or copy it over from old code
         return headingPIDF.calculate(error); //robot todo ensure radians and degrees don't mix, this whole thing really needs testing
+    }
+
+    public void startShoot(){
+        isShooting = true;
+        setIntakeState(IntakeState.SHOOTING);
+        waitForOpen = shooter.gateIsClosed();
+        if (waitForOpen){
+            shooter.openGate();
+            intake.stop();
+        } else {
+            intake.spinIn();
+        }
+        shootTimer.start();
+    }
+
+    public void handleShoot(){
+        if (waitForOpen) {
+            if (shootTimer.elapsedTime() > 300){
+                waitForOpen = false;
+                shootTimer.start();
+            }
+        } else {
+            intake.spinIn();
+        }
+
+        if (shootTimer.done()) {
+            intake.stop();
+            shooter.closeGate();
+            setDriveStateManual(DriveState.NORMAL);
+            setIntakeState(IntakeState.OFF);
+            beamBreaks.reset();
+            isShooting = false;
+        }
+
+
     }
 
 
