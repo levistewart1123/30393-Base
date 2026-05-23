@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode;
+package org.firstinspires.ftc.teamcode.robot;
 
 import static com.pedropathing.ivy.commands.Commands.conditional;
 import static com.pedropathing.ivy.commands.Commands.infinite;
@@ -9,21 +9,24 @@ import com.pedropathing.follower.Follower;
 import com.pedropathing.geometry.Pose;
 import com.pedropathing.ivy.Command;
 import com.pedropathing.paths.PathChain;
+import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.seattlesolvers.solverslib.controller.PIDFController;
 import com.seattlesolvers.solverslib.util.Timing;
 
-import org.firstinspires.ftc.teamcode.subsystems.BeamBreaks;
-import org.firstinspires.ftc.teamcode.subsystems.Intake;
-import org.firstinspires.ftc.teamcode.subsystems.Kickstand;
-import org.firstinspires.ftc.teamcode.subsystems.Shooter;
+import org.firstinspires.ftc.teamcode.Paths;
+import org.firstinspires.ftc.teamcode.PoseSaver;
+import org.firstinspires.ftc.teamcode.robot.subsystems.BeamBreaks;
+import org.firstinspires.ftc.teamcode.robot.subsystems.Intake;
+import org.firstinspires.ftc.teamcode.robot.subsystems.Kickstand;
+import org.firstinspires.ftc.teamcode.robot.subsystems.Shooter;
 
 
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 public class Robot {
-
     public enum DriveState{
         NORMAL,
         AIMING,
@@ -52,6 +55,7 @@ public class Robot {
     double forwardInput, rightInput, rotateInput = 0;
     public boolean isShooting = false;
     public boolean slowDrive = false;
+
 
     Command shoot = Command.build() //might want to make this 2 separate commands if I see any issues
             .setStart(() -> {
@@ -102,6 +106,11 @@ public class Robot {
     );
 
     public void init(boolean red, HardwareMap hwMap){
+        List<LynxModule> allHubs = hwMap.getAll(LynxModule.class);
+        for (LynxModule hub : allHubs) {
+            hub.setBulkCachingMode(LynxModule.BulkCachingMode.AUTO); //we can try setting this to manual and see how much loop times improve
+        }
+
         intake = new Intake();
         shooter = new Shooter();
         beamBreaks = new BeamBreaks();

@@ -1,10 +1,10 @@
-package org.firstinspires.ftc.teamcode.subsystems;
+package org.firstinspires.ftc.teamcode.robot.subsystems;
 
 import com.qualcomm.robotcore.hardware.DigitalChannel;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.seattlesolvers.solverslib.util.Timing;
 
-import org.firstinspires.ftc.teamcode.subsystems.Prism.GoBildaPrismDriver;
+import org.firstinspires.ftc.teamcode.robot.subsystems.Prism.GoBildaPrismDriver;
 
 import java.util.concurrent.TimeUnit;
 

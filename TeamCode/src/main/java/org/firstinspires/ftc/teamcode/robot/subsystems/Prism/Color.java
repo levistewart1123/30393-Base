@@ -20,7 +20,7 @@
  *   SOFTWARE.
  */
 
-package org.firstinspires.ftc.teamcode.subsystems.Prism;
+package org.firstinspires.ftc.teamcode.robot.subsystems.Prism;
 
 public class Color {
     public int red;
