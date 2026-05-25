@@ -8,11 +8,11 @@ import org.firstinspires.ftc.teamcode.robot.Robot;
 /**
  *
  */
-public class TeleOp extends OpMode {
+public class CommandTeleOp extends OpMode {
     protected Robot robot = new Robot();
     protected boolean isRed;
 
-    public TeleOp(boolean isRed) {
+    public CommandTeleOp(boolean isRed) {
         this.isRed = isRed;
     }
 
@@ -23,17 +23,19 @@ public class TeleOp extends OpMode {
 
     @Override
     public void start() {
-        robot.f.startTeleOpDrive();
+        robot.periodic(gamepad1);
+
     }
 
     @Override
     public void loop() {
         robot.periodic(gamepad1);
+
         if (gamepad1.bWasPressed()){
             robot.toggleAiming();
         }
         if (gamepad1.xWasPressed()){
-            robot.startShoot();
+            robot.shoot.schedule();
         }
         if (gamepad1.aWasPressed()){
             robot.slowDrive = !robot.slowDrive;

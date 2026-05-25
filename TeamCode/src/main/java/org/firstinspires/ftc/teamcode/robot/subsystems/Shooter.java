@@ -1,5 +1,8 @@
 package org.firstinspires.ftc.teamcode.robot.subsystems;
 
+import static com.pedropathing.ivy.commands.Commands.instant;
+
+import com.pedropathing.ivy.Command;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.seattlesolvers.solverslib.hardware.AbsoluteAnalogEncoder;
 import com.seattlesolvers.solverslib.hardware.motors.Motor;
@@ -64,11 +67,12 @@ public class Shooter {
     public void openGate(){
         gate.set(0);
     }
-
     public void closeGate(){
         gate.set(1);
     } //robot todo make sure this works
 
+    public Command open = instant(() -> gate.set(0));
+    public Command close = instant(() -> gate.set(1));
     public boolean gateIsOpen(){
         return gateEncoder.getCurrentPosition() == GATE_OPEN_ANGLE; //robot todo try out gate encoder w/telemetry (see above)
     }

@@ -3,11 +3,15 @@ package org.firstinspires.ftc.teamcode.robot;
 import static com.pedropathing.ivy.commands.Commands.conditional;
 import static com.pedropathing.ivy.commands.Commands.infinite;
 import static com.pedropathing.ivy.commands.Commands.instant;
+import static com.pedropathing.ivy.commands.Commands.waitMs;
+import static com.pedropathing.ivy.groups.Groups.parallel;
+import static com.pedropathing.ivy.groups.Groups.sequential;
 import static com.pedropathing.ivy.pedro.PedroCommands.follow;
 
 import com.pedropathing.follower.Follower;
 import com.pedropathing.geometry.Pose;
 import com.pedropathing.ivy.Command;
+import com.pedropathing.ivy.Scheduler;
 import com.pedropathing.paths.PathChain;
 import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.robotcore.hardware.Gamepad;
@@ -15,7 +19,6 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.seattlesolvers.solverslib.controller.PIDFController;
 import com.seattlesolvers.solverslib.util.Timing;
 
-import org.firstinspires.ftc.teamcode.Paths;
 import org.firstinspires.ftc.teamcode.PoseSaver;
 import org.firstinspires.ftc.teamcode.robot.subsystems.BeamBreaks;
 import org.firstinspires.ftc.teamcode.robot.subsystems.Intake;
@@ -55,38 +58,37 @@ public class Robot {
     double forwardInput, rightInput, rotateInput = 0;
     public boolean isShooting = false;
     public boolean slowDrive = false;
+    public Pose redGoal = new Pose(134,139);
 
 
-    Command shoot = Command.build() //might want to make this 2 separate commands if I see any issues
-            .setStart(() -> {
-                isShooting = true;
-                intake.stop();
-                waitForOpen = shooter.gateIsClosed();
-                if (waitForOpen){
-                    shooter.openGate();
-                }
-                shootTimer.start();
-            })
-            .setExecute(() -> {
-                if (waitForOpen) {
-                    if (shootTimer.elapsedTime() > 300){
-                        waitForOpen = false;
-                        shootTimer.start();
-                    }
-                } else {
-                    intake.spinIn();
-                }
+    Command setShooting(boolean shooting){
+      return instant(() -> isShooting = shooting);
+    }
 
-            })
-            .setDone(() -> shootTimer.done())
-            .setEnd(endCondition -> {
-                intake.stop();
-                shooter.closeGate();
-                isShooting = false;
-            })
-            .requiring(intake, shooter)
-            //todo add conflicting behaviors here and priority
-            ;
+    Command fastShoot = sequential(
+            setShooting(true),
+            intake.in,
+            waitMs(700),
+            intake.off,
+            shooter.close,
+            setShooting(false)
+    );
+    Command slowShoot = sequential(
+            setShooting(true),
+            intake.off,
+            shooter.open,
+            waitMs(300), //robot todo change to waitUntil(gateIsOpen) once it's working
+            intake.in,
+            waitMs(700),
+            intake.off,
+            shooter.close,
+            setShooting(false)
+    );
+    public Command shoot = conditional(
+            () -> shooter.gateIsOpen(),
+            fastShoot,
+            slowShoot
+    );
 
     public Command handleNormalDrive(){
         return infinite(()-> f.setTeleOpDrive(forwardInput, rightInput, rotateInput));
@@ -96,16 +98,20 @@ public class Robot {
     }
     public Command driveOff = instant(() -> f.setTeleOpDrive(0, 0, 0));
     public Command followPath(PathChain pathChain){
-        return (driveOff).then(follow(f, pathChain));
+        return (driveOff).then(follow(f, pathChain)).then(startManualDrive);
     }
+    Command startManualDrive = instant(() -> f.startTeleOpDrive());
 
     public Command handleManualDrive = conditional(
             () -> autoAiming,
             handleNormalDrive(),
             handleAimingDrive()
     );
+    public Command handleControl = parallel(
+            handleManualDrive.unless(() -> f.isBusy())
+    );
 
-    public void init(boolean red, HardwareMap hwMap){
+    public void init(boolean isRed, HardwareMap hwMap){
         List<LynxModule> allHubs = hwMap.getAll(LynxModule.class);
         for (LynxModule hub : allHubs) {
             hub.setBulkCachingMode(LynxModule.BulkCachingMode.AUTO); //we can try setting this to manual and see how much loop times improve
@@ -120,18 +126,20 @@ public class Robot {
         beamBreaks.init(hwMap);
         shooter.init(hwMap);
 
-        if (red){
-            goalPose = Paths.redGoal;
+        if (isRed){
+            goalPose = redGoal;
         } else {
-            goalPose = Paths.blueGoal;
+            goalPose = redGoal.mirror();
         }
-        f.setStartingPose(PoseSaver.endPose);
+        if (PoseSaver.autoWasRun) {
+            f.setStartingPose(PoseSaver.endPose);
+        }
     }
 
     public double getDistToGoal(){
         double xDiff = f.getPose().getX() - goalPose.getX();
         double yDiff = f.getPose().getY() - goalPose.getY();
-        return Math.sqrt(Math.pow(xDiff, 2) + Math.pow(yDiff, 2)); //lab todo aouble check this
+        return Math.sqrt(Math.pow(xDiff, 2) + Math.pow(yDiff, 2)); //lab todo double check this
     }
 
     public void periodic(Gamepad gamepad){
@@ -167,6 +175,45 @@ public class Robot {
                 f.setTeleOpDrive(0,0,0);
                 break;
         }
+
+        switch (intakeState){
+            case IN:
+                intake.spinIn();
+                break;
+            case OUT:
+                intake.spinOut();
+                break;
+            case OFF:
+                intake.stop();
+            case SHOOTING:
+                break;
+        }
+
+        shooter.periodic(getDistToGoal());
+        beamBreaks.periodic(isShooting, autoAiming);
+        if (usingAutoGate){
+            autoGate();
+        }
+    }
+
+    public void commandPeriodic(Gamepad gamepad){
+        f.update();
+
+        kickstand.periodic();
+
+        if (isShooting) {
+            handleShoot();
+        }
+
+        forwardInput = gamepad.left_stick_y;
+        rightInput = gamepad.left_stick_x;
+        rotateInput = gamepad.right_stick_x;//lab todo check directions with old code
+        if (slowDrive){
+            forwardInput *= 0.2;
+            rightInput *= 0.2;
+            rotateInput *= 0.2;
+        }
+        Scheduler.schedule(handleControl);
 
         switch (intakeState){
             case IN:
