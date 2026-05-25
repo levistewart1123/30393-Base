@@ -4,14 +4,15 @@ import static com.pedropathing.ivy.commands.Commands.conditional;
 import static com.pedropathing.ivy.commands.Commands.infinite;
 import static com.pedropathing.ivy.commands.Commands.instant;
 import static com.pedropathing.ivy.commands.Commands.waitMs;
-import static com.pedropathing.ivy.groups.Groups.parallel;
 import static com.pedropathing.ivy.groups.Groups.sequential;
 import static com.pedropathing.ivy.pedro.PedroCommands.follow;
 
 import com.pedropathing.follower.Follower;
 import com.pedropathing.geometry.Pose;
 import com.pedropathing.ivy.Command;
-import com.pedropathing.ivy.Scheduler;
+import com.pedropathing.ivy.behaviors.BlockedBehavior;
+import com.pedropathing.ivy.behaviors.ConflictBehavior;
+import com.pedropathing.ivy.behaviors.InterruptedBehavior;
 import com.pedropathing.paths.PathChain;
 import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.robotcore.hardware.Gamepad;
@@ -47,7 +48,7 @@ public class Robot {
 
     public Intake intake;
     public Shooter shooter;
-    public Follower f;
+    public Follower follower;
     public BeamBreaks beamBreaks;
     public Kickstand kickstand;
     Timing.Timer shootTimer = new Timing.Timer(700, TimeUnit.MILLISECONDS);
@@ -60,27 +61,51 @@ public class Robot {
     public boolean slowDrive = false;
     public Pose redGoal = new Pose(134,139);
 
+    //*movement commands
+    // Combine the logic into one infinite command
+    public Command handleDriveInput = infinite(() -> {
+        if (autoAiming) {
+            follower.setTeleOpDrive(forwardInput, rightInput, getAimingPIDFOutput());
+        } else {
+            follower.setTeleOpDrive(forwardInput, rightInput, rotateInput);
+        }
+    });
+    public Command driveOff = instant(() -> follower.setTeleOpDrive(0,0,0));
+    Command startTeleOpDrive = instant(() -> follower.startTeleOpDrive());
+    public Command toggleAiming = instant(() -> autoAiming = !autoAiming);
 
+    public Command startManualDrive = sequential(
+            startTeleOpDrive,
+            handleDriveInput
+    )
+            .requiring(follower)
+            .setPriority(0)
+            .setInterruptedBehavior(InterruptedBehavior.SUSPEND)
+            .setConflictBehavior(ConflictBehavior.QUEUE)
+            .setBlockedBehavior(BlockedBehavior.QUEUE)
+            ;
+    //*shooting commands
     Command setShooting(boolean shooting){
       return instant(() -> isShooting = shooting);
     }
-
     Command fastShoot = sequential(
+            driveOff,
             setShooting(true),
-            intake.in,
+            intake.setIn,
             waitMs(700),
-            intake.off,
+            intake.turnOff,
             shooter.close,
             setShooting(false)
     );
     Command slowShoot = sequential(
+            driveOff,
             setShooting(true),
-            intake.off,
+            intake.turnOff,
             shooter.open,
             waitMs(300), //robot todo change to waitUntil(gateIsOpen) once it's working
-            intake.in,
+            intake.setIn,
             waitMs(700),
-            intake.off,
+            intake.turnOff,
             shooter.close,
             setShooting(false)
     );
@@ -88,28 +113,45 @@ public class Robot {
             () -> shooter.gateIsOpen(),
             fastShoot,
             slowShoot
-    );
+    )
+            .requiring(intake, follower, shooter)
+            .setPriority(1)
+            ;
+    //*other shooter commands
+    public Command handleGate = conditional(
+            () -> (beamBreaks.getBallCount() < 3),
+            shooter.open,
+            shooter.close
+    )
+            .requiring(shooter)
+            .setPriority(0)
+            .setBlockedBehavior(BlockedBehavior.CANCEL)
+            ;
+    //*intake commands (creates new intake commands with requirements and priorities)
+    public Command startIntake = instant(
+            () -> intake.spinIn()
+    )
+            .requiring(intake)
+            .setPriority(0)
+            ;
+    public Command stopIntake = instant(
+            () -> intake.stop()
+    )
+            .requiring(intake)
+            .setPriority(0)
+            ;
+    public Command reverseIntake = instant(
+            () -> intake.spinOut()
+    )
+            .requiring(intake)
+            .setPriority(0)
+            ;
 
-    public Command handleNormalDrive(){
-        return infinite(()-> f.setTeleOpDrive(forwardInput, rightInput, rotateInput));
-    }
-    public Command handleAimingDrive(){
-        return infinite(()-> f.setTeleOpDrive(forwardInput, rightInput, getAimingPIDFOutput()));
-    }
-    public Command driveOff = instant(() -> f.setTeleOpDrive(0, 0, 0));
-    public Command followPath(PathChain pathChain){
-        return (driveOff).then(follow(f, pathChain)).then(startManualDrive);
-    }
-    Command startManualDrive = instant(() -> f.startTeleOpDrive());
 
-    public Command handleManualDrive = conditional(
-            () -> autoAiming,
-            handleNormalDrive(),
-            handleAimingDrive()
-    );
-    public Command handleControl = parallel(
-            handleManualDrive.unless(() -> f.isBusy())
-    );
+
+
+
+
 
     public void init(boolean isRed, HardwareMap hwMap){
         List<LynxModule> allHubs = hwMap.getAll(LynxModule.class);
@@ -132,18 +174,18 @@ public class Robot {
             goalPose = redGoal.mirror();
         }
         if (PoseSaver.autoWasRun) {
-            f.setStartingPose(PoseSaver.endPose);
+            follower.setStartingPose(PoseSaver.endPose);
         }
     }
 
     public double getDistToGoal(){
-        double xDiff = f.getPose().getX() - goalPose.getX();
-        double yDiff = f.getPose().getY() - goalPose.getY();
+        double xDiff = follower.getPose().getX() - goalPose.getX();
+        double yDiff = follower.getPose().getY() - goalPose.getY();
         return Math.sqrt(Math.pow(xDiff, 2) + Math.pow(yDiff, 2)); //lab todo double check this
     }
 
     public void periodic(Gamepad gamepad){
-        f.update();
+        follower.update();
 
         kickstand.periodic();
 
@@ -161,18 +203,18 @@ public class Robot {
         }
         switch (driveState){
             case NORMAL:
-                f.setTeleOpDrive(forwardInput, rightInput, rotateInput);
+                follower.setTeleOpDrive(forwardInput, rightInput, rotateInput);
                 break;
             case AIMING:
-                f.setTeleOpDrive(forwardInput, rightInput, getAimingPIDFOutput());
+                follower.setTeleOpDrive(forwardInput, rightInput, getAimingPIDFOutput());
                 break;
             case AUTOMATED:
-                if (!f.isBusy()){
+                if (!follower.isBusy()){
                     setDriveStateManual(DriveState.NORMAL);
                 }
                 break;
             case OFF:
-                f.setTeleOpDrive(0,0,0);
+                follower.setTeleOpDrive(0,0,0);
                 break;
         }
 
@@ -197,7 +239,7 @@ public class Robot {
     }
 
     public void commandPeriodic(Gamepad gamepad){
-        f.update();
+        follower.update();
 
         kickstand.periodic();
 
@@ -213,7 +255,6 @@ public class Robot {
             rightInput *= 0.2;
             rotateInput *= 0.2;
         }
-        Scheduler.schedule(handleControl);
 
         switch (intakeState){
             case IN:
@@ -244,10 +285,10 @@ public class Robot {
             switch (driveState) {
                 case NORMAL:
                 case AIMING:
-                    f.startTeleOpDrive();
+                    follower.startTeleOpDrive();
                     break;
                 case OFF:
-                    f.setTeleOpDrive(0, 0, 0);
+                    follower.setTeleOpDrive(0, 0, 0);
                     break;
             }
         }
@@ -255,8 +296,8 @@ public class Robot {
     public void setDriveStateAutomated(PathChain pathChain){
         if (this.driveState != DriveState.AUTOMATED) {
             this.driveState = DriveState.AUTOMATED;
-            f.setTeleOpDrive(0, 0, 0);
-            f.followPath(pathChain);
+            follower.setTeleOpDrive(0, 0, 0);
+            follower.followPath(pathChain);
         }
     }
 
@@ -278,10 +319,10 @@ public class Robot {
     }
 
     public double getAimingPIDFOutput(){
-        double xDiff = f.getPose().getX() - goalPose.getX();
-        double yDiff = f.getPose().getY() - goalPose.getY();
+        double xDiff = follower.getPose().getX() - goalPose.getX();
+        double yDiff = follower.getPose().getY() - goalPose.getY();
         double targetAngle = Math.atan2(xDiff, yDiff);
-        double error = f.getHeading() - targetAngle; //lab todo check this
+        double error = follower.getHeading() - targetAngle; //lab todo check this
 
         PIDFController headingPIDF = new PIDFController(0, 0, 0, 0); //lab todo tune this or base it off of pedro or copy it over from old code
         return headingPIDF.calculate(error); //robot todo ensure radians and degrees don't mix, this whole thing really needs testing

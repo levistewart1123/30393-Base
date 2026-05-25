@@ -31,9 +31,9 @@ public class Intake {
         return intake.get();
     }
 
-    public Command in = instant(() -> intake.set(1));
-    public Command out = instant(() -> intake.set(-1));
-    public Command off = instant(() -> intake.set(0));
+    public Command setIn = instant(() -> intake.set(1));
+    public Command setOut = instant(() -> intake.set(-1));
+    public Command turnOff = instant(() -> intake.set(0));
     public Command run(int power){
         return instant(() -> intake.set(power));
     }

@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode.tele;
 
-import com.pedropathing.ivy.Scheduler;
+import static com.pedropathing.ivy.Scheduler.schedule;
+
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 
 import org.firstinspires.ftc.teamcode.robot.Robot;
@@ -23,7 +24,7 @@ public class TeleOp extends OpMode {
 
     @Override
     public void start() {
-        robot.f.startTeleOpDrive();
+        robot.follower.startTeleOpDrive();
     }
 
     @Override
