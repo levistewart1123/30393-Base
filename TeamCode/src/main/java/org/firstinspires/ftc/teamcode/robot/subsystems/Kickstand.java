@@ -12,8 +12,9 @@ public class Kickstand {
     Timing.Timer timer;
 
     public void init(HardwareMap hwMap){
-        left = hwMap.get(CRServo.class, "Kickstand Left");
-        right = hwMap.get(CRServo.class, "Kickstand Right"); //lab todo one of these is reversed
+        left = hwMap.get(CRServo.class, "Kickstand L");
+        right = hwMap.get(CRServo.class, "Kickstand R");
+        right.setInverted(true);
         timer = new Timing.Timer(4000, TimeUnit.MILLISECONDS);
     }
 

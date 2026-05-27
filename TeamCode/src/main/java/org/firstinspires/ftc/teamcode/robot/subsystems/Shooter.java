@@ -48,18 +48,20 @@ public class Shooter {
         flywheels.setVeloCoefficients(0.0015, 0, 0);
         flywheels.setFeedforwardCoefficients(0, 1.45); //robot todo use recalc
 
-        gate = new ServoEx(hwMap, "Gate", GATE_CLOSED_ANGLE, GATE_OPEN_ANGLE);
-        gate = hwMap.get(ServoEx.class, "Gate");
-        gate.setInverted(true);
-        gateEncoder = new AbsoluteAnalogEncoder(hwMap, "Gate Encoder", 3.3, AngleUnit.RADIANS); //robot todo try out gate encoder w/telemetry
+//        gate = new ServoEx(hwMap, "Gate", GATE_CLOSED_ANGLE, GATE_OPEN_ANGLE);
+//        gate = hwMap.get(ServoEx.class, "Gate");
+//        gate.setInverted(true);
+//        gateEncoder = new AbsoluteAnalogEncoder(hwMap, "Gate Encoder", 3.3, AngleUnit.RADIANS); //robot todo try out gate encoder w/telemetry
 
         hood = new ServoEx(hwMap, "Hood", 0, Math.toRadians(120));
         hood.setInverted(true);
 
-        velocities.add(1, 1); //robot todo replace these and change hood range
-        velocities.createLUT();
+        velocities.add(1, 1);
+        velocities.add(6, 7);//robot todo replace these and change hood range
+        //!velocities.createLUT();
         angles.add(1, 1);
-        angles.createLUT();
+        angles.add(6, 7);
+        //!angles.createLUT();
 
         state = States.AUTOMATIC;
     }
@@ -100,6 +102,12 @@ public class Shooter {
                 break;
         }
 
+    }
+    public void setHood(double position){
+        hood.set(position);
+    }
+    public void runNoPIDF(double power){
+        flywheels.set(power);
     }
 
 

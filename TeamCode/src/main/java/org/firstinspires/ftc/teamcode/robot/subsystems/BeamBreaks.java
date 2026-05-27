@@ -20,9 +20,9 @@ public class BeamBreaks {
 
 
     public void init(HardwareMap hwMap){
-        top = hwMap.get(DigitalChannel.class, "");//lab todo insert names
-        middle = hwMap.get(DigitalChannel.class, "");
-        bottom = hwMap.get(DigitalChannel.class, "");
+        top = hwMap.get(DigitalChannel.class, "Beam Break Top");//lab todo insert names
+        middle = hwMap.get(DigitalChannel.class, "Beam Break Middle");
+        bottom = hwMap.get(DigitalChannel.class, "Beam Break Bottom");
     }
 
     public int getBallCount(){
