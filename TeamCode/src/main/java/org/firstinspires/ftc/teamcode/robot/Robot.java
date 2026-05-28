@@ -7,6 +7,7 @@ import static com.pedropathing.ivy.commands.Commands.waitMs;
 import static com.pedropathing.ivy.groups.Groups.sequential;
 import static com.pedropathing.ivy.pedro.PedroCommands.follow;
 
+import com.bylazar.configurables.annotations.Configurable;
 import com.pedropathing.follower.Follower;
 import com.pedropathing.geometry.Pose;
 import com.pedropathing.ivy.Command;
@@ -30,6 +31,7 @@ import org.firstinspires.ftc.teamcode.robot.subsystems.Shooter;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
+@Configurable
 public class Robot {
     public enum DriveState{
         NORMAL,
@@ -56,10 +58,17 @@ public class Robot {
     public boolean autoAiming = false;
     boolean usingAutoGate = true;
     public Pose goalPose;
+    public Pose redGoal = new Pose(134,139);
+    public Pose humanPZ;
+    public Pose redHPZ = new Pose(8,11.5, 0);
     double forwardInput, rightInput, rotateInput = 0;
     public boolean isShooting = false;
     public boolean slowDrive = false;
-    public Pose redGoal = new Pose(134,139);
+    public static double headingKP = 0.001;
+    public static double headingKI = 0;
+    public static double headingKD = 0.0001;
+    public static double headingKF = 0.02;
+
 
     //*movement commands
     // Combine the logic into one infinite command
@@ -162,11 +171,6 @@ public class Robot {
             ;
 
 
-
-
-
-
-
     public void init(boolean isRed, HardwareMap hwMap){
         List<LynxModule> allHubs = hwMap.getAll(LynxModule.class);
         for (LynxModule hub : allHubs) {
@@ -181,11 +185,15 @@ public class Robot {
 
         if (isRed){
             goalPose = redGoal;
+            humanPZ = redHPZ;
         } else {
             goalPose = redGoal.mirror();
+            humanPZ = redHPZ.mirror();
         }
         if (PoseSaver.autoWasRun) {
             follower.setStartingPose(PoseSaver.endPose);
+        } else {
+            follower.setStartingPose(humanPZ);
         }
         follower.update();
     }
@@ -266,7 +274,7 @@ public class Robot {
         double targetAngle = Math.atan2(xDiff, yDiff);
         double error = follower.getHeading() - targetAngle;
 
-        PIDFController headingPIDF = new PIDFController(0, 0, 0, 0); //robot todo tune this or base it off of pedro or copy it over from old code
+        PIDFController headingPIDF = new PIDFController(headingKP, headingKI, headingKD, headingKF); //robot todo tune this or base it off of pedro or copy it over from old code
         return headingPIDF.calculate(error);
     }
 

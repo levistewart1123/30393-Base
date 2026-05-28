@@ -1,19 +1,18 @@
-package org.firstinspires.ftc.teamcode;
+package org.firstinspires.ftc.teamcode.opmode;
 
 import com.pedropathing.ivy.Command;
 import com.pedropathing.ivy.Scheduler;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
+import com.qualcomm.robotcore.util.ElapsedTime;
 import com.seattlesolvers.solverslib.util.Timing;
-
-import org.firstinspires.ftc.teamcode.robot.Robot;
 
 import java.util.concurrent.TimeUnit;
 
 public class CommandOpMode extends OpMode {
-    protected int loops = 0;
-    protected int secondLoops = 0;
-    protected int storedLoops = 0;
-    protected Timing.Stopwatch loopTimer = new Timing.Stopwatch(TimeUnit.MILLISECONDS);
+    protected double loops = 0;
+    protected double secondLoops = 0;
+    protected double storedLoops = 0;
+    protected ElapsedTime loopTimer = new ElapsedTime();
     protected Timing.Timer secTimer = new Timing.Timer(1000, TimeUnit.MILLISECONDS);
     public void reset() {
         Scheduler.reset();
@@ -32,7 +31,8 @@ public class CommandOpMode extends OpMode {
 
     @Override
     public void start() {
-        loopTimer.start();
+        loopTimer.reset();
+        secTimer.start();
     }
 
     @Override
@@ -44,9 +44,8 @@ public class CommandOpMode extends OpMode {
             secondLoops = 0;
             secTimer.start();
         }
-        telemetry.addData("this loop time: ", loopTimer.deltaTime());
-        telemetry.addData("average loop time: ", (loopTimer.elapsedTime()/loops));
-        telemetry.addData("loops per second (approximate)", secondLoops);
+        telemetry.addData("average loop time (ms): ", (loopTimer.milliseconds()/loops));
+        telemetry.addData("loops per second (approximate)", storedLoops);
         Scheduler.execute();
     }
 

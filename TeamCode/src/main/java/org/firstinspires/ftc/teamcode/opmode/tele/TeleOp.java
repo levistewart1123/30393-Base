@@ -1,7 +1,6 @@
-package org.firstinspires.ftc.teamcode.tele;
+package org.firstinspires.ftc.teamcode.opmode.tele;
 
 import static com.pedropathing.ivy.Scheduler.execute;
-import static com.pedropathing.ivy.Scheduler.reset;
 import static com.pedropathing.ivy.Scheduler.schedule;
 import static com.pedropathing.ivy.pedro.PedroCommands.follow;
 
@@ -11,10 +10,10 @@ import com.pedropathing.ivy.Scheduler;
 import com.pedropathing.paths.HeadingInterpolator;
 import com.pedropathing.paths.Path;
 import com.pedropathing.paths.PathChain;
-import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 
-import org.firstinspires.ftc.teamcode.CommandOpMode;
+import org.firstinspires.ftc.teamcode.opmode.CommandOpMode;
 import org.firstinspires.ftc.teamcode.Paths;
+import org.firstinspires.ftc.teamcode.PoseSaver;
 import org.firstinspires.ftc.teamcode.robot.Robot;
 
 import java.util.function.Supplier;
@@ -87,9 +86,14 @@ public class TeleOp extends CommandOpMode {
         telemetry.addLine(Scheduler.isRunning(robot.handleIntake) ? "manual intake" : "not manual intake");
         telemetry.addLine(Scheduler.isRunning(robot.handleGate) ? "auto gate" : "not auto gate");
         telemetry.addLine(Scheduler.isRunning(robot.startManualDrive) ? "manual drive" : "not manual drive");
+        telemetry.addData("distance to goal: ", robot.getDistToGoal());
         //lab todo add automated drive controls from old code
 
         super.loop(); //runs CommandOpMode's loop
         telemetry.update();
+    }
+
+    public void stop(){
+        PoseSaver.autoWasRun = false;
     }
 }
