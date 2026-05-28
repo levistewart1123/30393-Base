@@ -43,14 +43,14 @@ public class Shooter {
                 new MotorEx(hwMap, "FlywheelLeft", Motor.GoBILDA.NONE.getCPR(), 4825).setInverted(true),
                 new MotorEx(hwMap, "FlywheelRight", Motor.GoBILDA.NONE.getCPR(), 4825)
         );
-        flywheels.setRunMode(Motor.RunMode.VelocityControl);
+        flywheels.setRunMode(Motor.RunMode.RawPower);
 
         flywheels.setVeloCoefficients(0.0015, 0, 0);
         flywheels.setFeedforwardCoefficients(0, 1.45); //robot todo use recalc
 
-//        gate = new ServoEx(hwMap, "Gate", GATE_CLOSED_ANGLE, GATE_OPEN_ANGLE);
-//        gate = hwMap.get(ServoEx.class, "Gate");
-//        gate.setInverted(true);
+        //gate = new ServoEx(hwMap, "Gate", GATE_CLOSED_ANGLE, GATE_OPEN_ANGLE);
+        //gate = hwMap.get(ServoEx.class, "Gate");
+        //gate.setInverted(true);
 //        gateEncoder = new AbsoluteAnalogEncoder(hwMap, "Gate Encoder", 3.3, AngleUnit.RADIANS); //robot todo try out gate encoder w/telemetry
 
         hood = new ServoEx(hwMap, "Hood", 0, Math.toRadians(120));
@@ -76,19 +76,18 @@ public class Shooter {
     public Command open = instant(() -> gate.set(0));
     public Command close = instant(() -> gate.set(1));
     public boolean gateIsOpen(){
-        return gateEncoder.getCurrentPosition() == GATE_OPEN_ANGLE; //robot todo try out gate encoder w/telemetry (see above)
+        return gate.get() == 0; //robot todo try out gate encoder w/telemetry (see above)
     }
     public boolean gateIsClosed(){
-        return gateEncoder.getCurrentPosition() == GATE_CLOSED_ANGLE;
+        return gate.get() == 1;
     }
 
 
     public void periodic(double distance){
-        if (state == States.AUTOMATIC) {
-            targetRPM = velocities.get(distance);
-            flywheels.set(targetRPM / flywheels.getMaxRPM());
-            hood.set(angles.get(distance));
-        }
+        targetRPM = velocities.get(distance);
+        flywheels.set(targetRPM / flywheels.getMaxRPM());
+        hood.set(angles.get(distance));
+
     }
     public void changeState(States state){
         this.state = state;

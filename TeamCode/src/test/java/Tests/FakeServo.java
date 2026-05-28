@@ -1,3 +1,5 @@
+package Tests;
+
 public class FakeServo {
     double position = 0;
     public double get() {

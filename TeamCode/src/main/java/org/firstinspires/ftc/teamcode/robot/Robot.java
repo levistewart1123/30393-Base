@@ -21,6 +21,7 @@ import com.seattlesolvers.solverslib.controller.PIDFController;
 import com.seattlesolvers.solverslib.util.Timing;
 
 import org.firstinspires.ftc.teamcode.PoseSaver;
+import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 import org.firstinspires.ftc.teamcode.robot.subsystems.BeamBreaks;
 import org.firstinspires.ftc.teamcode.robot.subsystems.Intake;
 import org.firstinspires.ftc.teamcode.robot.subsystems.Kickstand;
@@ -44,13 +45,13 @@ public class Robot {
         SHOOTING
     }
     DriveState driveState = DriveState.NORMAL;
-    IntakeState intakeState = IntakeState.OFF;
+    public IntakeState intakeState = IntakeState.OFF;
 
-    public Intake intake;
-    public Shooter shooter;
+    public Intake intake = new Intake();
+    public Shooter shooter = new Shooter();
     public Follower follower;
-    public BeamBreaks beamBreaks;
-    public Kickstand kickstand;
+    public BeamBreaks beamBreaks = new BeamBreaks();
+    public Kickstand kickstand = new Kickstand();
     Timing.Timer shootTimer = new Timing.Timer(700, TimeUnit.MILLISECONDS);
     boolean waitForOpen;
     public boolean autoAiming = false;
@@ -94,23 +95,29 @@ public class Robot {
             intake.setIn,
             waitMs(700),
             intake.turnOff,
-            shooter.close,
+            //shooter.close,
             setShooting(false)
-    );
-    Command slowShoot = sequential(
+    )
+            .requiring(intake, follower, shooter)
+            .setPriority(1)
+            ;
+    public Command slowShoot = sequential(
             driveOff,
             setShooting(true),
             intake.turnOff,
-            shooter.open,
+            //shooter.open,
             waitMs(300), //robot todo change to waitUntil(gateIsOpen) once it's working
             intake.setIn,
             waitMs(700),
             intake.turnOff,
-            shooter.close,
+            //shooter.close,
             setShooting(false)
-    );
+    )
+            .requiring(intake, follower, shooter)
+            .setPriority(1)
+            ;
     public Command shoot = conditional(
-            () -> shooter.gateIsOpen(),
+            () -> false, //!fixme
             fastShoot,
             slowShoot
     )
@@ -118,33 +125,41 @@ public class Robot {
             .setPriority(1)
             ;
     //*other shooter commands
-    public Command handleGate = conditional(
-            () -> (beamBreaks.getBallCount() < 3),
-            shooter.open,
-            shooter.close
+    public Command handleGate = infinite(() -> {
+                if (beamBreaks.getBallCount() == 3) {
+                    shooter.openGate();
+                } else {
+                    shooter.closeGate();
+                }
+            }
     )
             .requiring(shooter)
             .setPriority(0)
-            .setBlockedBehavior(BlockedBehavior.CANCEL)
+            .setInterruptedBehavior(InterruptedBehavior.SUSPEND)
+            .setBlockedBehavior(BlockedBehavior.QUEUE)
+            .setConflictBehavior(ConflictBehavior.QUEUE)
             ;
-    //*intake commands (creates new intake commands with requirements and priorities)
-    public Command startIntake = instant(
-            () -> intake.spinIn()
+
+    public Command handleIntake = infinite(
+            () -> {
+                switch (intakeState){
+                    case IN:
+                        intake.spinIn();
+                        break;
+                    case OUT:
+                        intake.spinOut();
+                        break;
+                    case OFF:
+                        intake.stop();
+                        break;
+                }
+            }
     )
             .requiring(intake)
             .setPriority(0)
-            ;
-    public Command stopIntake = instant(
-            () -> intake.stop()
-    )
-            .requiring(intake)
-            .setPriority(0)
-            ;
-    public Command reverseIntake = instant(
-            () -> intake.spinOut()
-    )
-            .requiring(intake)
-            .setPriority(0)
+            .setInterruptedBehavior(InterruptedBehavior.SUSPEND)
+            .setBlockedBehavior(BlockedBehavior.QUEUE)
+            .setConflictBehavior(ConflictBehavior.QUEUE)
             ;
 
 
@@ -159,14 +174,11 @@ public class Robot {
             hub.setBulkCachingMode(LynxModule.BulkCachingMode.AUTO); //we can try setting this to manual and see how much loop times improve
         }
 
-        intake = new Intake();
-        shooter = new Shooter();
-        beamBreaks = new BeamBreaks();
-        kickstand = new Kickstand();
+        follower = Constants.createFollower(hwMap);
         intake.init(hwMap);
         shooter.init(hwMap);
-        beamBreaks.init(hwMap);
-        shooter.init(hwMap);
+        //beamBreaks.init(hwMap);
+        //kickstand.init(hwMap);
 
         if (isRed){
             goalPose = redGoal;
@@ -176,6 +188,7 @@ public class Robot {
         if (PoseSaver.autoWasRun) {
             follower.setStartingPose(PoseSaver.endPose);
         }
+        follower.update();
     }
 
     public double getDistToGoal(){
@@ -193,9 +206,9 @@ public class Robot {
             handleShoot();
         }
 
-        forwardInput = gamepad.left_stick_y;
-        rightInput = gamepad.left_stick_x;
-        rotateInput = gamepad.right_stick_x;//lab todo check directions with old code
+        forwardInput = -gamepad.left_stick_y;
+        rightInput = -gamepad.left_stick_x;
+        rotateInput = -gamepad.right_stick_x;//lab todo check directions with old code
         if (slowDrive){
             forwardInput *= 0.2;
             rightInput *= 0.2;
@@ -238,42 +251,26 @@ public class Robot {
         }
     }
 
-    public void commandPeriodic(Gamepad gamepad){
+    public void commandPeriodic(double f, double r, double t){
         follower.update();
 
-        kickstand.periodic();
+        //kickstand.periodic();
 
         if (isShooting) {
             handleShoot();
         }
 
-        forwardInput = gamepad.left_stick_y;
-        rightInput = gamepad.left_stick_x;
-        rotateInput = gamepad.right_stick_x;//lab todo check directions with old code
+        forwardInput = -f;
+        rightInput = -r;
+        rotateInput = -t;//lab todo check directions with old code
         if (slowDrive){
             forwardInput *= 0.2;
             rightInput *= 0.2;
             rotateInput *= 0.2;
         }
 
-        switch (intakeState){
-            case IN:
-                intake.spinIn();
-                break;
-            case OUT:
-                intake.spinOut();
-                break;
-            case OFF:
-                intake.stop();
-            case SHOOTING:
-                break;
-        }
-
-        shooter.periodic(getDistToGoal());
-        beamBreaks.periodic(isShooting, autoAiming);
-        if (usingAutoGate){
-            autoGate();
-        }
+        //shooter.periodic(getDistToGoal());
+        //beamBreaks.periodic(isShooting, autoAiming);
     }
 
     public void setIntakeState(IntakeState intakeState){

@@ -1,11 +1,15 @@
 package org.firstinspires.ftc.teamcode.tele;
 
+import static com.pedropathing.ivy.Scheduler.execute;
+import static com.pedropathing.ivy.Scheduler.isRunning;
+import static com.pedropathing.ivy.Scheduler.isScheduled;
 import static com.pedropathing.ivy.Scheduler.reset;
 import static com.pedropathing.ivy.Scheduler.schedule;
 import static com.pedropathing.ivy.pedro.PedroCommands.follow;
 
 import com.pedropathing.geometry.BezierLine;
 import com.pedropathing.geometry.Pose;
+import com.pedropathing.ivy.Scheduler;
 import com.pedropathing.ivy.behaviors.BlockedBehavior;
 import com.pedropathing.paths.HeadingInterpolator;
 import com.pedropathing.paths.Path;
@@ -42,17 +46,19 @@ public class CommandTeleOp extends OpMode {
     }
 
 
-
-
     @Override
     public void start() {
-        robot.periodic(gamepad1);
+        robot.commandPeriodic(gamepad1.left_stick_y, gamepad1.left_stick_x, gamepad1.right_stick_x);
         schedule(robot.startManualDrive);
+        //schedule(robot.handleGate);
+        schedule(robot.handleIntake);
+        execute();
     }
 
     @Override
     public void loop() {
-        robot.periodic(gamepad1);
+        execute();
+        robot.commandPeriodic(gamepad1.left_stick_y, gamepad1.left_stick_x, gamepad1.right_stick_x);
 
         //*autoaim
         if (gamepad1.bWasPressed()){
@@ -72,13 +78,17 @@ public class CommandTeleOp extends OpMode {
         }
         //*intake
         if (gamepad1.right_trigger > 0.1){
-            schedule(robot.startIntake);
+            robot.intakeState = Robot.IntakeState.IN;
         } else if (gamepad1.left_trigger > 0.1) {
-            schedule(robot.reverseIntake);
+            robot.intakeState = Robot.IntakeState.OUT;
         } else {
-            schedule(robot.stopIntake);
+            robot.intakeState = Robot.IntakeState.OFF;
         }
-
+        telemetry.addLine(Scheduler.isRunning(robot.shoot) ? "shooting" : "not shooting");
+        telemetry.addLine(Scheduler.isRunning(robot.handleIntake) ? "manual intake" : "not manual intake");
+        telemetry.addLine(Scheduler.isRunning(robot.handleGate) ? "auto gate" : "not auto gate");
+        telemetry.addLine(Scheduler.isRunning(robot.startManualDrive) ? "manual drive" : "not manual drive");
+        telemetry.update();
         //lab todo add automated drive controls from old code
 
     }
