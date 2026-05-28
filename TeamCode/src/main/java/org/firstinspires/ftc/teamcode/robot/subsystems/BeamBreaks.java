@@ -20,7 +20,7 @@ public class BeamBreaks {
 
 
     public void init(HardwareMap hwMap){
-        top = hwMap.get(DigitalChannel.class, "Beam Break Top");//lab todo insert names
+        top = hwMap.get(DigitalChannel.class, "Beam Break Top");//robot todo wiring
         middle = hwMap.get(DigitalChannel.class, "Beam Break Middle");
         bottom = hwMap.get(DigitalChannel.class, "Beam Break Bottom");
     }
@@ -58,7 +58,7 @@ public class BeamBreaks {
     public void periodic(boolean shooting, boolean autoAim){
         int balls = getBallCount();
         if (shooting){
-            prism.loadAnimationsFromArtboard(GoBildaPrismDriver.Artboard.ARTBOARD_0); //robot todo change artboards
+            prism.loadAnimationsFromArtboard(GoBildaPrismDriver.Artboard.ARTBOARD_0); //lab todo change artboards
         } else if (autoAim) {
             prism.loadAnimationsFromArtboard(GoBildaPrismDriver.Artboard.ARTBOARD_0);
         } else if (balls == 3){

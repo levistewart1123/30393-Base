@@ -15,7 +15,6 @@ import com.pedropathing.ivy.behaviors.ConflictBehavior;
 import com.pedropathing.ivy.behaviors.InterruptedBehavior;
 import com.pedropathing.paths.PathChain;
 import com.qualcomm.hardware.lynx.LynxModule;
-import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.seattlesolvers.solverslib.controller.PIDFController;
 import com.seattlesolvers.solverslib.util.Timing;
@@ -194,64 +193,10 @@ public class Robot {
     public double getDistToGoal(){
         double xDiff = follower.getPose().getX() - goalPose.getX();
         double yDiff = follower.getPose().getY() - goalPose.getY();
-        return Math.sqrt(Math.pow(xDiff, 2) + Math.pow(yDiff, 2)); //lab todo double check this
+        return Math.sqrt(Math.pow(xDiff, 2) + Math.pow(yDiff, 2));
     }
 
-    public void periodic(Gamepad gamepad){
-        follower.update();
-
-        kickstand.periodic();
-
-        if (isShooting) {
-            handleShoot();
-        }
-
-        forwardInput = -gamepad.left_stick_y;
-        rightInput = -gamepad.left_stick_x;
-        rotateInput = -gamepad.right_stick_x;//lab todo check directions with old code
-        if (slowDrive){
-            forwardInput *= 0.2;
-            rightInput *= 0.2;
-            rotateInput *= 0.2;
-        }
-        switch (driveState){
-            case NORMAL:
-                follower.setTeleOpDrive(forwardInput, rightInput, rotateInput);
-                break;
-            case AIMING:
-                follower.setTeleOpDrive(forwardInput, rightInput, getAimingPIDFOutput());
-                break;
-            case AUTOMATED:
-                if (!follower.isBusy()){
-                    setDriveStateManual(DriveState.NORMAL);
-                }
-                break;
-            case OFF:
-                follower.setTeleOpDrive(0,0,0);
-                break;
-        }
-
-        switch (intakeState){
-            case IN:
-                intake.spinIn();
-                break;
-            case OUT:
-                intake.spinOut();
-                break;
-            case OFF:
-                intake.stop();
-            case SHOOTING:
-                break;
-        }
-
-        shooter.periodic(getDistToGoal());
-        beamBreaks.periodic(isShooting, autoAiming);
-        if (usingAutoGate){
-            autoGate();
-        }
-    }
-
-    public void commandPeriodic(double f, double r, double t){
+    public void periodic(double f, double r, double t){
         follower.update();
 
         //kickstand.periodic();
@@ -262,7 +207,7 @@ public class Robot {
 
         forwardInput = -f;
         rightInput = -r;
-        rotateInput = -t;//lab todo check directions with old code
+        rotateInput = -t;
         if (slowDrive){
             forwardInput *= 0.2;
             rightInput *= 0.2;
@@ -321,8 +266,8 @@ public class Robot {
         double targetAngle = Math.atan2(xDiff, yDiff);
         double error = follower.getHeading() - targetAngle;
 
-        PIDFController headingPIDF = new PIDFController(0, 0, 0, 0); //lab todo tune this or base it off of pedro or copy it over from old code
-        return headingPIDF.calculate(error); //robot todo ensure radians and degrees don't mix, this whole thing really needs testing
+        PIDFController headingPIDF = new PIDFController(0, 0, 0, 0); //robot todo tune this or base it off of pedro or copy it over from old code
+        return headingPIDF.calculate(error);
     }
 
     public void startShoot(){
