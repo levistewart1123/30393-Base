@@ -17,7 +17,7 @@ import com.pedropathing.ivy.behaviors.InterruptedBehavior;
 import com.pedropathing.paths.PathChain;
 import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.robotcore.hardware.HardwareMap;
-import com.seattlesolvers.solverslib.controller.PIDFController;
+import com.seattlesolvers.solverslib.controller.PIDController;
 import com.seattlesolvers.solverslib.util.Timing;
 
 import org.firstinspires.ftc.teamcode.PoseSaver;
@@ -56,7 +56,6 @@ public class Robot {
     Timing.Timer shootTimer = new Timing.Timer(700, TimeUnit.MILLISECONDS);
     boolean waitForOpen;
     public boolean autoAiming = false;
-    boolean usingAutoGate = true;
     public Pose goalPose;
     public Pose redGoal = new Pose(134,139);
     public Pose humanPZ;
@@ -64,14 +63,13 @@ public class Robot {
     double forwardInput, rightInput, rotateInput = 0;
     public boolean isShooting = false;
     public boolean slowDrive = false;
-    public static double headingKP = 0.001;
+    public static double headingKP = 0.03;
     public static double headingKI = 0;
-    public static double headingKD = 0.0001;
-    public static double headingKF = 0.02;
+    public static double headingKD = 0.01;
+    public static double headingKF = 0.15;
 
 
     //*movement commands
-    // Combine the logic into one infinite command
     public Command handleDriveInput = infinite(() -> {
         if (autoAiming) {
             follower.setTeleOpDrive(forwardInput, rightInput, getAimingPIDFOutput());
@@ -268,14 +266,16 @@ public class Robot {
         }
     }
 
-    public double getAimingPIDFOutput(){
+    public double getAngleErrorDeg(){
         double xDiff = goalPose.getX() - follower.getPose().getX();
         double yDiff = goalPose.getY() - follower.getPose().getY();
-        double targetAngle = Math.atan2(xDiff, yDiff);
-        double error = follower.getHeading() - targetAngle;
+        double targetAngle = Math.toDegrees(Math.atan2(xDiff, yDiff));
+        return Math.toDegrees(follower.getHeading()) - targetAngle;
+    }
 
-        PIDFController headingPIDF = new PIDFController(headingKP, headingKI, headingKD, headingKF); //robot todo tune this or base it off of pedro or copy it over from old code
-        return headingPIDF.calculate(error);
+    public double getAimingPIDFOutput(){
+        PIDController headingPID = new PIDController(headingKP, headingKI, headingKD); //robot todo tune this or base it off of pedro or copy it over from old code
+        return (headingPID.calculate(getAngleErrorDeg()) + (headingKF *Math.signum(getAngleErrorDeg()))); //!added kF separately
     }
 
     public void startShoot(){

@@ -178,8 +178,8 @@ public class RobotTests {
         double xDiff = 144 - 72;
         double yDiff = 144 - 72;
         double targetAngle = Math.toDegrees(Math.atan2(xDiff, yDiff));
-        double error = 0 - targetAngle;
-        assertEquals(-45, error);
+        double error = 180 - targetAngle;
+        assertEquals(135, error);
     }
 
     protected int loops = 0;

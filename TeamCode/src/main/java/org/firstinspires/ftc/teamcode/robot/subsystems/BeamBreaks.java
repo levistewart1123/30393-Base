@@ -54,6 +54,9 @@ public class BeamBreaks {
         middleWasPressed = false;
         bottomWasPressed = false;
     }
+    public void turnOff(){
+        prism.clearAllAnimations();
+    }
 
     public void periodic(boolean shooting, boolean autoAim){
         int balls = getBallCount();

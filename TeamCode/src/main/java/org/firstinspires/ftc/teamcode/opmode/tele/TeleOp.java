@@ -82,6 +82,7 @@ public class TeleOp extends CommandOpMode {
         } else {
             robot.intakeState = Robot.IntakeState.OFF;
         }
+        telemetry.addData("angle error: ", (robot.getAngleErrorDeg()));
         telemetry.addLine(Scheduler.isRunning(robot.shoot) ? "shooting" : "not shooting");
         telemetry.addLine(Scheduler.isRunning(robot.handleIntake) ? "manual intake" : "not manual intake");
         telemetry.addLine(Scheduler.isRunning(robot.handleGate) ? "auto gate" : "not auto gate");
