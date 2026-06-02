@@ -12,6 +12,7 @@ public class HuskeyLens {
     public static void init(HardwareMap hwMap){
         huskyLens = hwMap.get(HuskyLens.class,"huskylens");
         huskyLens.selectAlgorithm(HuskyLens.Algorithm.COLOR_RECOGNITION);
+
     }
 
     public static double determineSide() {
