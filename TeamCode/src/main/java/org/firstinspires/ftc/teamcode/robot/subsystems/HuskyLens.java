@@ -5,6 +5,7 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 public class HuskyLens {
     private com.qualcomm.hardware.dfrobot.HuskyLens huskyLens;
     public final double centerLineX = 160; //TODO change for correct half way line
+    public final double center = 2;
     public double leftBallAmount = 0;
     public double rightBallAmount = 0;
 
@@ -27,12 +28,6 @@ public class HuskyLens {
             }
         }
 
-        if (leftBallAmount > rightBallAmount) {
-            return -1;
-        } else if (leftBallAmount < rightBallAmount) {
-            return 1;
-        } else {
-            return 0;
-        }
+        return Double.compare(rightBallAmount, leftBallAmount);
     }
 }
