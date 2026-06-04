@@ -127,7 +127,6 @@ public class AutoPaths {
                     .setLinearHeadingInterpolation(spikeMarkMiddle.getHeading(), shoot.getHeading())
                     .build();
         }
-        //etc
     }
 }
 

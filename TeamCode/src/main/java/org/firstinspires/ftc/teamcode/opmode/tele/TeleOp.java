@@ -85,7 +85,6 @@ public class TeleOp extends CommandOpMode {
         reset();
     }
 
-
     @Override
     public void start() {
         super.start();

@@ -36,7 +36,6 @@ public class Auto extends OpMode {
             case MOVE_TO_SHOOT_PRELOADS:
                 robot.setDriveStateAutomated(autoPaths.startToShoot);
                 break;
-                //etc
         }
     }
 }

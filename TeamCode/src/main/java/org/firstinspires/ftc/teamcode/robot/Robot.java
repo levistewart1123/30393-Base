@@ -312,9 +312,5 @@ public class Robot {
             beamBreaks.reset();
             isShooting = false;
         }
-
-
     }
-
-
 }
