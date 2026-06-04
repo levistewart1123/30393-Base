@@ -10,15 +10,15 @@ public class AutoPaths {
     public PathChain startToShoot, shootToFarRightCollect, shootToFarLeftCollect, farLeftCollectToShoot, farHumanPlayerCollectToShoot, shootToSpikeMarkTop,shootToSpikeMarkMiddle, shootToGateCollect, spikeMarkOneToShoot, spikeMarkMiddleToShoot, gateCollectToShoot;
 
     public AutoPaths(Follower follower, boolean isRed, boolean far) {
-        farHumanPlayerCollect = new Pose(10, 4, Math.toRadians(180)); //TODO Add pose here
-        farHighHumanPlayerCollect = new Pose(10,25.000, Math.toRadians(180)); //TODO Add pose here
+        farHumanPlayerCollect = new Pose(10, 4, Math.toRadians(180));
+        farHighHumanPlayerCollect = new Pose(10,25.000, Math.toRadians(180));
         gateCollect = new Pose(14.4, 58.2, Math.toRadians(144.9));
         spikeMarkTop = new Pose(22.1, 82.7, Math.toRadians(180));
         spikeMarkMiddle = new Pose(15.0, 56.5, Math.toRadians(180));
         spikeMarkBottom = new Pose(11.6, 40, Math.toRadians(180));
 
         if (far) {// When far
-            start = new Pose(55.6, 7.2, Math.toRadians(90));//! may not work due to reversing start heading
+            start = new Pose(55.6, 7.2, Math.toRadians(90));
             shoot = new Pose(56.9, 20.6, Math.toRadians(118.5));
 
             if (isRed) {
@@ -67,8 +67,8 @@ public class AutoPaths {
                     .setLinearHeadingInterpolation(farHumanPlayerCollect.getHeading(), shoot.getHeading())
                     .build();
         } else if (!far) {// When close
-            start = new Pose(22.3, 120.2, Math.toRadians(139.4));//TODO Add poses here
-            shoot = new Pose(59.6, 72.9,Math.toRadians(130));//TODO Add poses here
+            start = new Pose(22.3, 120.2, Math.toRadians(139.4));
+            shoot = new Pose(59.6, 72.9,Math.toRadians(130));
 
             if (isRed){
                 start.mirror();
