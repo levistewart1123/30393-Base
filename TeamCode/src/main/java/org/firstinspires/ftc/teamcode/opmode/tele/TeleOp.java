@@ -91,7 +91,7 @@ public class TeleOp extends CommandOpMode {
         super.start();
         robot.periodic(gamepad1.left_stick_y, gamepad1.left_stick_x, gamepad1.right_stick_x);
         schedule(robot.startManualDrive);
-        //schedule(robot.handleGate);
+        schedule(robot.handleGate);
         schedule(robot.handleIntake);
         execute();
 
@@ -107,7 +107,7 @@ public class TeleOp extends CommandOpMode {
         }
         //*shooting
         if (gamepad1.xWasPressed()){
-            schedule(robot.shoot);
+            schedule(robot.slowShoot);
         }
         //*slow mode
         if (gamepad1.aWasPressed()){
@@ -134,6 +134,7 @@ public class TeleOp extends CommandOpMode {
         }
         //*telemetry
         telemetry.addData("angle error: ", (robot.getAngleErrorDeg()));
+        telemetry.addData("angle: ", (robot.follower.getHeading()));
         telemetry.addLine(Scheduler.isRunning(robot.shoot) ? "shooting" : "not shooting");
         telemetry.addLine(Scheduler.isRunning(robot.handleIntake) ? "manual intake" : "not manual intake");
         telemetry.addLine(Scheduler.isRunning(robot.handleGate) ? "auto gate" : "not auto gate");

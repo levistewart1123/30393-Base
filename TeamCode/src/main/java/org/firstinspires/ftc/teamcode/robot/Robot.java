@@ -103,26 +103,26 @@ public class Robot {
             intake.setIn,
             waitMs(700),
             intake.turnOff,
-            //shooter.close,
+            shooter.close,
             setShooting(false)
     )
             .requiring(intake, follower, shooter)
-            .setPriority(1)
+            .setPriority(2)
             ;
     public Command slowShoot = sequential(
             driveOff,
             setShooting(true),
             intake.turnOff,
-            //shooter.open,
+            shooter.open,
             waitMs(300), //robot todo change to waitUntil(gateIsOpen) once it's working
             intake.setIn,
             waitMs(700),
             intake.turnOff,
-            //shooter.close,
+            shooter.close,
             setShooting(false)
     )
             .requiring(intake, follower, shooter)
-            .setPriority(1)
+            .setPriority(2)
             ;
     public Command shoot = conditional(
             () -> false, //!fixme
@@ -134,11 +134,11 @@ public class Robot {
             ;
     //*other shooter commands
     public Command handleGate = infinite(() -> {
-                if (beamBreaks.getBallCount() == 3) {
-                    shooter.openGate();
-                } else {
+//                if (beamBreaks.getBallCount() == 3) {
+//                    shooter.openGate();
+//                } else {
                     shooter.closeGate();
-                }
+                //}
             }
     )
             .requiring(shooter)
@@ -196,6 +196,7 @@ public class Robot {
         } else {
             follower.setStartingPose(humanPZ);
         }
+        PoseSaver.autoWasRun = false;
         follower.update();
     }
 
@@ -211,10 +212,6 @@ public class Robot {
 
         //kickstand.periodic();
 
-        if (isShooting) {
-            handleShoot();
-        }
-
         forwardInput = -f;
         rightInput = -r;
         rotateInput = -t;
@@ -223,7 +220,7 @@ public class Robot {
             rightInput *= 0.2;
             rotateInput *= 0.2;
         }
-
+        shooter.runWithPIDF(1);
         //shooter.periodic(getDistToGoal());
         //beamBreaks.periodic(isShooting, autoAiming);
     }
@@ -273,8 +270,10 @@ public class Robot {
     public double getAngleErrorDeg(){
         double xDiff = goalPose.getX() - follower.getPose().getX();
         double yDiff = goalPose.getY() - follower.getPose().getY();
-        double targetAngle = Math.toDegrees(Math.atan2(xDiff, yDiff));
-        return Math.toDegrees(follower.getHeading()) - targetAngle;
+        double badAngle = Math.toDegrees(Math.atan2(xDiff, yDiff));
+        double targetAngle = Math.atan2(Math.cos(badAngle), Math.sin(badAngle));
+
+        return Math.toDegrees(targetAngle - follower.getHeading());
     }
 
     public double getAimingPIDFOutput(){
