@@ -18,7 +18,7 @@ public class ShooterConstants {
     public static double SCORE_ACCURACY = 6;
 
     public static Pose getGoalPos() {
-        return (TransferConstants.isAllianceColorRed) ? ShooterConstants.GOAL_POS_RED : ShooterConstants.GOAL_POS_BLUE;
+        return/* (TransferConstants.isAllianceColorRed) ? ShooterConstants.GOAL_POS_RED : ShooterConstants.GOAL_POS_BLUE*/new Pose();
     }
 
     public static PIDFCoefficients FLYWHEEL_PIDF = new PIDFCoefficients(0.006, 0.0015, 0, 0.091);

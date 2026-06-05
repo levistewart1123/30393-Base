@@ -17,7 +17,7 @@ public class FakeShooter {
     States state = States.AUTOMATIC;
     final double GATE_OPEN_ANGLE = Math.toRadians(120);//robot todo fix these
         final double GATE_CLOSED_ANGLE = 0;
-        private FakeMotor flywheels;
+        public FakeMotor flywheels;
         private FakeServo gate;
         private FakeServo hood;
         final double FIXED_SPEED = 0.5;

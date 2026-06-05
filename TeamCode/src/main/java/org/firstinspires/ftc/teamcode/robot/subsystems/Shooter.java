@@ -131,20 +131,20 @@ public class Shooter {
     //gyrobotic droids' shooting code
     public Vector calculateShotVector(double robotHeading){
     double g = 32.174 * 12;
-    double x = robotToGoalVector.getMagnitude() - ShooterConstants.PASS_THROUGH_POINT_RADIUS;
+    double x /*= robotToGoalVector.getMagnitude() - ShooterConstants.PASS_THROUGH_POINT_RADIUS*/ = 0;
     double y = ShooterConstants.SCORE_HEIGHT;
     double a = ShooterConstants.SCORE_ANGLE;
 
     //calculate initial launch components
-    double hoodAngle = MathFunctions.clamp(Math.atan(2 * y / x - Math.tan(a)), ShooterConstants.HOOD_MAX_ANGLE,
+    double hoodAngle = MathFunctions.clamp(Math.atan(2 * y / /*x*/ - Math.tan(a)), ShooterConstants.HOOD_MAX_ANGLE,
             ShooterConstants.HOOD_MIN_ANGLE);
 
     double flywheelSpeed = Math.sqrt(g * x * x / (2 * Math.pow(Math.cos(hoodAngle), 2) * (x * Math.tan(hoodAngle) - y)));
 
     //get robot velocity and convert it into parallel and perpendicular components
-    Vector robotVelocity = hardware.poseTracker.getVelocity();
+    Vector robotVelocity = /*hardware.poseTracker.getVelocity()*/new Vector();
 
-    double coordinateTheta = robotVelocity.getTheta() - robotToGoalVector.getTheta();
+    double coordinateTheta = robotVelocity.getTheta() - /*robotToGoalVector.getTheta()*/0;
 
     double parallelComponent = -Math.cos(coordinateTheta) * robotVelocity.getMagnitude();
     double perpendicularComponent = Math.sin(coordinateTheta) * robotVelocity.getMagnitude();
@@ -164,7 +164,7 @@ public class Shooter {
 
     //update turret
     double turretVelCompOffset = Math.atan(perpendicularComponent / ivr);
-    double turretAngle = Math.toDegrees(robotHeading - robotToGoalVector.getTheta() + turretVelCompOffset);
+    double turretAngle = Math.toDegrees(robotHeading - /*robotToGoalVector.getTheta() +*/ turretVelCompOffset);
 
 
         return new Vector(flywheelSpeed, hoodAngle);

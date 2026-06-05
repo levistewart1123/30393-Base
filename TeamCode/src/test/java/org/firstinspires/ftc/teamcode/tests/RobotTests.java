@@ -7,6 +7,7 @@ import static com.pedropathing.ivy.commands.Commands.conditional;
 import static com.pedropathing.ivy.commands.Commands.infinite;
 import static com.pedropathing.ivy.commands.Commands.instant;
 import static com.pedropathing.ivy.groups.Groups.sequential;
+import static com.seattlesolvers.solverslib.util.MathUtils.normalizeAngle;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.pedropathing.ivy.Command;
@@ -17,6 +18,7 @@ import com.qualcomm.robotcore.util.Range;
 import com.seattlesolvers.solverslib.controller.PIDController;
 import com.seattlesolvers.solverslib.util.Timing;
 
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.junit.jupiter.api.Test;
 
 import java.util.concurrent.TimeUnit;
@@ -255,6 +257,14 @@ public class RobotTests {
         assertEquals("intake off gate closed automatically manual drive ", currentCommand);
     }
 
+    @Test
+    public void getAngleErrorDeg() {
+        double xDiff = 137 - 72;
+        double yDiff = 137 - 72;
+        double targetAngle = normalizeAngle(Math.toDegrees(Math.atan2(xDiff, yDiff)), false, AngleUnit.DEGREES);
+
+        assertEquals(0, (targetAngle - 45));
+    }
 
     public static double headingKP = 0.02;
     public static double headingKI = 0;
@@ -267,5 +277,19 @@ public class RobotTests {
         PIDController headingPID = new PIDController(headingKP, headingKI, headingKD); //robot todo tune this
         double error = 45;
         assertEquals(-1, Range.clip((headingPID.calculate(error) - headingKF * Math.signum(error)), -1, 1)); //!added kF separately
+    }
+
+    @Test
+    public void runFlywheel(){
+        double speed = 0;
+        shooter.init();
+        shooter.flywheels.setPIDCoeffs(20, 0, 0, 0, 0.7, 0);
+        for (int i = 0; i <= 100; i++){
+            double PIDOutput = shooter.flywheels.PID.calculate(0.5);
+            double FFOutput = shooter.flywheels.FF.calculate(0.5);
+            shooter.flywheels.set(0.5);
+            speed = shooter.flywheels.get();
+        }
+        assertEquals(0.5, speed);
     }
 }

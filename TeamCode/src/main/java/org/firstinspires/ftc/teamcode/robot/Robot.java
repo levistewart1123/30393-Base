@@ -6,6 +6,7 @@ import static com.pedropathing.ivy.commands.Commands.instant;
 import static com.pedropathing.ivy.commands.Commands.waitMs;
 import static com.pedropathing.ivy.groups.Groups.sequential;
 import static com.pedropathing.ivy.pedro.PedroCommands.follow;
+import static com.seattlesolvers.solverslib.util.MathUtils.normalizeAngle;
 
 import com.bylazar.configurables.annotations.Configurable;
 import com.pedropathing.follower.Follower;
@@ -21,6 +22,7 @@ import com.qualcomm.robotcore.util.Range;
 import com.seattlesolvers.solverslib.controller.PIDController;
 import com.seattlesolvers.solverslib.util.Timing;
 
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.teamcode.PoseSaver;
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 import org.firstinspires.ftc.teamcode.robot.subsystems.BeamBreaks;
@@ -270,10 +272,9 @@ public class Robot {
     public double getAngleErrorDeg(){
         double xDiff = goalPose.getX() - follower.getPose().getX();
         double yDiff = goalPose.getY() - follower.getPose().getY();
-        double badAngle = Math.toDegrees(Math.atan2(xDiff, yDiff));
-        double targetAngle = Math.atan2(Math.cos(badAngle), Math.sin(badAngle));
+        double targetAngle = normalizeAngle(Math.toDegrees(Math.atan2(xDiff, yDiff)), false, AngleUnit.DEGREES);
 
-        return Math.toDegrees(targetAngle - follower.getHeading());
+        return targetAngle - follower.getHeading();
     }
 
     public double getAimingPIDFOutput(){
