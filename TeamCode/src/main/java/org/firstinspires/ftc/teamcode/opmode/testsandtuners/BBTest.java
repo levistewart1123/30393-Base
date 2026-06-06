@@ -8,7 +8,7 @@ import org.firstinspires.ftc.teamcode.robot.subsystems.BeamBreaks;
 import org.firstinspires.ftc.teamcode.robot.subsystems.Shooter;
 
 @Configurable
-@TeleOp
+@TeleOp(name = "Beam Break Test", group = "2: tests")
 public class BBTest extends CommandOpMode {
     private BeamBreaks beamBreaks = new BeamBreaks();
     @Override

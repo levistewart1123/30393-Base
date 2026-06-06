@@ -15,12 +15,11 @@ import com.pedropathing.ivy.Command;
 import com.pedropathing.ivy.behaviors.BlockedBehavior;
 import com.pedropathing.ivy.behaviors.ConflictBehavior;
 import com.pedropathing.ivy.behaviors.InterruptedBehavior;
-import com.pedropathing.paths.PathChain;
+import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.util.Range;
 import com.seattlesolvers.solverslib.controller.PIDController;
-import com.seattlesolvers.solverslib.util.Timing;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.teamcode.PoseSaver;
@@ -33,7 +32,6 @@ import org.firstinspires.ftc.teamcode.robot.subsystems.Shooter;
 
 
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 
 /**
  * This holds all of our subsystem classes and puts together Commands using them.
@@ -45,6 +43,7 @@ public class Robot {
         OUT,
         OFF
     }
+
     public IntakeState intakeState = IntakeState.OFF;
 
     public Intake intake = new Intake();
@@ -53,13 +52,12 @@ public class Robot {
     public Follower follower;
     public BeamBreaks beamBreaks = new BeamBreaks();
     public Kickstand kickstand = new Kickstand();
-    Timing.Timer shootTimer = new Timing.Timer(700, TimeUnit.MILLISECONDS);
-    boolean waitForOpen;
+    public Limelight3A limelight = null;
     public boolean autoAiming = false;
     public Pose goalPose;
-    public Pose redGoal = new Pose(134,139);
+    public Pose redGoal = new Pose(134, 139);
     public Pose humanPZ;
-    public Pose redHPZ = new Pose(8,11.5, 0);
+    public Pose redHPZ = new Pose(8, 11.5, 0);
     double forwardInput, rightInput, rotateInput = 0;
     public boolean isShooting = false;
     public boolean slowDrive = false;
@@ -78,7 +76,7 @@ public class Robot {
             follower.setTeleOpDrive(forwardInput, rightInput, rotateInput);
         }
     });
-    public Command driveOff = instant(() -> follower.setTeleOpDrive(0,0,0));
+    public Command driveOff = instant(() -> follower.setTeleOpDrive(0, 0, 0));
     Command startTeleOpDrive = instant(() -> follower.startTeleOpDrive());
 
     public Command startManualDrive = sequential(
@@ -89,15 +87,17 @@ public class Robot {
             .setPriority(0)
             .setInterruptedBehavior(InterruptedBehavior.SUSPEND)
             .setConflictBehavior(ConflictBehavior.QUEUE)
-            .setBlockedBehavior(BlockedBehavior.QUEUE)
-            ;
+            .setBlockedBehavior(BlockedBehavior.QUEUE);
+
     //*shooting commands
-    Command setShooting(boolean shooting){
-      return instant(() -> isShooting = shooting);
+    Command setShooting(boolean shooting) {
+        return instant(() -> isShooting = shooting);
     }
-    Command setAiming(boolean aiming){
+
+    Command setAiming(boolean aiming) {
         return instant(() -> autoAiming = aiming);
     }
+
     Command fastShoot = sequential(
             driveOff,
             setShooting(true),
@@ -109,8 +109,7 @@ public class Robot {
             setAiming(false)
     )
             .requiring(intake, follower, shooter)
-            .setPriority(2)
-            ;
+            .setPriority(2);
     public Command slowShoot = sequential(
             driveOff,
             setShooting(true),
@@ -125,22 +124,20 @@ public class Robot {
             setAiming(false)
     )
             .requiring(intake, follower, shooter)
-            .setPriority(2)
-            ;
+            .setPriority(2);
     public Command shoot = conditional(
             () -> false, //!fixme
             fastShoot,
             slowShoot
     )
             .requiring(intake, follower, shooter)
-            .setPriority(2)
-            ;
+            .setPriority(2);
     //*other shooter commands
     public Command handleGate = infinite(() -> {
 //                if (beamBreaks.getBallCount() == 3) {
 //                    shooter.openGate();
 //                } else {
-                    shooter.closeGate();
+                shooter.closeGate();
                 //}
             }
     )
@@ -148,12 +145,11 @@ public class Robot {
             .setPriority(0)
             .setInterruptedBehavior(InterruptedBehavior.SUSPEND)
             .setBlockedBehavior(BlockedBehavior.QUEUE)
-            .setConflictBehavior(ConflictBehavior.QUEUE)
-            ;
+            .setConflictBehavior(ConflictBehavior.QUEUE);
 
     public Command handleIntake = infinite(
             () -> {
-                switch (intakeState){
+                switch (intakeState) {
                     case IN:
                         intake.spinIn();
                         break;
@@ -170,16 +166,16 @@ public class Robot {
             .setPriority(0)
             .setInterruptedBehavior(InterruptedBehavior.SUSPEND)
             .setBlockedBehavior(BlockedBehavior.QUEUE)
-            .setConflictBehavior(ConflictBehavior.QUEUE)
-            ;
-    public void setIntakeState(IntakeState intakeState){
-        if (this.intakeState != intakeState){
+            .setConflictBehavior(ConflictBehavior.QUEUE);
+
+    public void setIntakeState(IntakeState intakeState) {
+        if (this.intakeState != intakeState) {
             this.intakeState = intakeState;
         }
     }
 
 
-    public void init(boolean isRed, HardwareMap hwMap){
+    public void init(boolean isRed, HardwareMap hwMap) {
         List<LynxModule> allHubs = hwMap.getAll(LynxModule.class);
         for (LynxModule hub : allHubs) {
             hub.setBulkCachingMode(LynxModule.BulkCachingMode.AUTO); //we can try setting this to manual and see how much loop times improve
@@ -190,9 +186,10 @@ public class Robot {
         shooter.init(hwMap);
         huskyLens.init(hwMap);
         beamBreaks.init(hwMap);
+
         //kickstand.init(hwMap);
         this.isRed = isRed;
-        if (isRed){
+        if (isRed) {
             goalPose = redGoal;
             humanPZ = redHPZ;
         } else {
@@ -208,13 +205,13 @@ public class Robot {
         follower.update();
     }
 
-    public double getDistToGoal(){
+    public double getDistToGoal() {
         double xDiff = follower.getPose().getX() - goalPose.getX();
         double yDiff = follower.getPose().getY() - goalPose.getY();
         return Math.sqrt(Math.pow(xDiff, 2) + Math.pow(yDiff, 2));
     }
 
-    public void periodic(double f, double r, double t){
+    public void periodic(double f, double r, double t) {
         follower.update();
         shooter.autoHood(getDistToGoal());
 
@@ -223,7 +220,7 @@ public class Robot {
         forwardInput = -f;
         rightInput = -r;
         rotateInput = -t;
-        if (slowDrive){//!todo change
+        if (slowDrive) {//!todo change
             forwardInput *= 0.5;
             rightInput *= 0.5;
             rotateInput *= 0.5;
@@ -234,7 +231,7 @@ public class Robot {
         beamBreaks.auraFarm();
     }
 
-    public double getAngleErrorDeg(){
+    public double getAngleErrorDeg() {
         double xDiff = goalPose.getX() - follower.getPose().getX();
         double yDiff = goalPose.getY() - follower.getPose().getY();
         double angleFromCoords = Math.toDegrees(Math.atan2(yDiff, xDiff));
@@ -244,9 +241,39 @@ public class Robot {
         return normalizeAngle(targetAngle - currentHeading, false, AngleUnit.DEGREES);
     }
 
-    public double getAimingPIDFOutput(){
+    public double getAimingPIDFOutput() {
         PIDController headingPID = new PIDController(headingKP, headingKI, headingKD); //robot todo tune this
-        return -1*(Range.clip((headingPID.calculate(getAngleErrorDeg()) - headingKF * Math.signum(getAngleErrorDeg())), -1, 1));
+        return -1 * (Range.clip((headingPID.calculate(getAngleErrorDeg()) - headingKF * Math.signum(getAngleErrorDeg())), -1, 1));
     }
+
+    double x = 0; // your initial state
+    double Q = 0.1; // your model covariance
+    double R = 0.4; // your sensor covariance
+    double p = 1; // your initial covariance guess
+    double K = 1; // your initial Kalman gain guess
+
+    double x_previous = x;
+    double p_previous = p;
+    double odoChange = 0;
+    double z = 0;
+    public Pose filteredOdoPose(Pose rawOdometryPose) {
+        odoChange = 1; // Ex: change in position from odometry.
+        x = x_previous + odoChange;
+
+        p = p_previous + Q;
+
+        K = p/(p + R);
+
+        z = 1; // Pose Estimate from April Tag / Distance Sensor
+
+        x = x + K * (z - x);
+
+        p = (1 - K) * p;
+
+        x_previous = x;
+        p_previous = p;
+        return new Pose();
+    }
+
 
 }

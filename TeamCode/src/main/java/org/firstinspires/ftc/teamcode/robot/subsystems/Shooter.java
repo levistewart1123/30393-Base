@@ -128,7 +128,7 @@ public class Shooter {
     }
 
 
-    //gyrobotic droids' shooting code
+    //gyrobotic droids' shooting code (note comments)
     public Vector calculateShotVector(double robotHeading){
     double g = 32.174 * 12;
     double x /*= robotToGoalVector.getMagnitude() - ShooterConstants.PASS_THROUGH_POINT_RADIUS*/ = 0;

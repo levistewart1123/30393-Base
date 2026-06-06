@@ -7,7 +7,7 @@ import org.firstinspires.ftc.teamcode.opmode.CommandOpMode;
 import org.firstinspires.ftc.teamcode.robot.subsystems.Shooter;
 
 @Configurable
-@TeleOp
+@TeleOp(name = "Gate Test", group = "2: tests")
 public class GateTest extends CommandOpMode {
     private Shooter shooter = new Shooter();
     @Override

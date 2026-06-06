@@ -1,6 +1,5 @@
 package org.firstinspires.ftc.teamcode.opmode.tele;
 
-import static com.pedropathing.ivy.Scheduler.execute;
 import static com.pedropathing.ivy.Scheduler.schedule;
 import static com.pedropathing.ivy.pedro.PedroCommands.follow;
 
@@ -15,7 +14,6 @@ import com.pedropathing.paths.Path;
 import com.pedropathing.paths.PathChain;
 
 import org.firstinspires.ftc.teamcode.opmode.CommandOpMode;
-import org.firstinspires.ftc.teamcode.AutoPaths;
 import org.firstinspires.ftc.teamcode.PoseSaver;
 import org.firstinspires.ftc.teamcode.robot.Robot;
 
@@ -25,7 +23,7 @@ import java.util.function.Supplier;
  *This is our base TeleOp class.
  * Red and Blue TeleOps that extend this should be created and put on the driver station.
  */
-public class TeleOp extends CommandOpMode {
+public class BaseTeleOp extends CommandOpMode {
     protected Robot robot = new Robot();
 
     protected boolean isRed;
@@ -43,7 +41,7 @@ public class TeleOp extends CommandOpMode {
     private Supplier<PathChain> farOpposingIntake;
     private Supplier<PathChain> farAlliedIntake;
 
-    public TeleOp(boolean isRed) {
+    public BaseTeleOp(boolean isRed) {
         this.isRed = isRed;
     }
 

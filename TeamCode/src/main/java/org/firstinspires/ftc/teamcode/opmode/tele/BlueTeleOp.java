@@ -1,7 +1,9 @@
 package org.firstinspires.ftc.teamcode.opmode.tele;
 
-@com.qualcomm.robotcore.eventloop.opmode.TeleOp
-public class BlueTeleOp extends TeleOp {
+import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+
+@TeleOp(name = "Blue TeleOp", group = "0: TeleOp")
+public class BlueTeleOp extends BaseTeleOp {
     public BlueTeleOp() {
         super(false);
     }

@@ -5,7 +5,10 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import org.firstinspires.ftc.teamcode.opmode.CommandOpMode;
 import org.firstinspires.ftc.teamcode.robot.Robot;
 
-@TeleOp
+/**
+ * for autoaim testing
+ */
+@TeleOp(name = "Autoaim Test", group = "2: tests")
 public class AngleTester extends CommandOpMode {
     private Robot robot = new Robot();
     @Override

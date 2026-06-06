@@ -1,9 +1,12 @@
 package org.firstinspires.ftc.teamcode.opmode.testsandtuners;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import org.firstinspires.ftc.teamcode.opmode.CommandOpMode;
 
-@TeleOp
+@Deprecated
+@Disabled
+@TeleOp(name = "Flywheel Max Speed Test", group = "tests")
 public class MaxSpeedTest extends CommandOpMode {
     private DcMotorEx flywheelL;
     private DcMotorEx flywheelR;
