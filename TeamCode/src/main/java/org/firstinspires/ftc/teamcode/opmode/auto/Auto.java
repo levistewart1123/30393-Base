@@ -27,14 +27,12 @@ public class Auto extends OpMode {
     public void init() {
         robot.init(isRed, hardwareMap);
         autoPaths = new AutoPaths(robot.follower, isRed,false);
-        robot.setDriveStateManual(Robot.DriveState.OFF);
     }
 
     @Override
     public void loop() {
         switch (step){
             case MOVE_TO_SHOOT_PRELOADS:
-                robot.setDriveStateAutomated(autoPaths.startToShoot);
                 break;
         }
     }

@@ -8,6 +8,10 @@ import com.seattlesolvers.solverslib.util.Timing;
 
 import java.util.concurrent.TimeUnit;
 
+/**
+ * This is the base class that all OpModes we make should extend.
+ * It automatically logs loop times and runs the scheduler.
+ */
 public class CommandOpMode extends OpMode {
     protected double loops = 0;
     protected double secondLoops = 0;
@@ -25,17 +29,27 @@ public class CommandOpMode extends OpMode {
         Scheduler.schedule(commands);
     }
 
+    /**
+     * resets scheduler
+     */
     @Override
     public void init() {
         reset();
     }
 
+    /**
+     * starts timers for loop time logging and runs loop once
+     */
     @Override
     public void start() {
         loopTimer.reset();
         secTimer.start();
+        loop();
     }
 
+    /**
+     * adds loop time to telemetry, updates it, and runs scheduler
+     */
     @Override
     public void loop() {
         secondLoops++;
@@ -47,9 +61,13 @@ public class CommandOpMode extends OpMode {
         }
         telemetry.addData("average loop time (ms): ", (loopTimer.milliseconds()/loops));
         telemetry.addData("loops per second (approximate)", storedLoops);
+        telemetry.update();
         Scheduler.execute();
     }
 
+    /**
+     * resets scheduler
+     */
     public void stop() {
         reset();
     }

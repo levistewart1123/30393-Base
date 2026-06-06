@@ -1,18 +1,15 @@
 package org.firstinspires.ftc.teamcode.opmode.testsandtuners;
 
-import com.bylazar.configurables.annotations.Configurable;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.seattlesolvers.solverslib.hardware.servos.ServoEx;
 
 import org.firstinspires.ftc.teamcode.opmode.CommandOpMode;
 import org.firstinspires.ftc.teamcode.robot.subsystems.Shooter;
 
-@Configurable
-@TeleOp
-public class FlywheelTuner extends CommandOpMode {
-    public static double velocity;
-    private Shooter shooter = new Shooter();
-    public static double kP, kI, kD, kS, kV, kA, power = 0;
 
+@TeleOp
+public class HoodFixer extends CommandOpMode {
+    private Shooter shooter = new Shooter();
     @Override
     public void init() {
         super.init();
@@ -22,15 +19,17 @@ public class FlywheelTuner extends CommandOpMode {
     @Override
     public void start() {
         super.start();
+        shooter.setHood(1);
     }
 
     @Override
     public void loop() {
-        shooter.setFlywheelCoeffs(kP, kI, kD, kS, kV, kA);
-        shooter.runWithPIDF(power);
-        velocity = shooter.getFlywheelVelocity();
-        telemetry.addData("velocity: ", velocity);
         super.loop();
+        if (super.loops > 2000) {
+            shooter.setHood(0.04);
+        } else {
+            shooter.setHood(1);
+        }
     }
 
     @Override

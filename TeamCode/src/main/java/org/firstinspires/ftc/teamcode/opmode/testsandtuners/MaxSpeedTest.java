@@ -26,7 +26,6 @@ public class MaxSpeedTest extends CommandOpMode {
     public void loop() {
         telemetry.addData("velocity: ", flywheelL.getVelocity()/28); //rpm(?)
         super.loop();
-        telemetry.update();
     }
 
     @Override

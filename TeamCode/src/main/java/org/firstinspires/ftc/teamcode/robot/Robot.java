@@ -35,21 +35,16 @@ import org.firstinspires.ftc.teamcode.robot.subsystems.Shooter;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
+/**
+ * This holds all of our subsystem classes and puts together Commands using them.
+ */
 @Configurable
 public class Robot {
-    public enum DriveState{
-        NORMAL,
-        AIMING,
-        AUTOMATED,
-        OFF
-    }
     public enum IntakeState {
         IN,
         OUT,
-        OFF,
-        SHOOTING
+        OFF
     }
-    DriveState driveState = DriveState.NORMAL;
     public IntakeState intakeState = IntakeState.OFF;
 
     public Intake intake = new Intake();
@@ -72,6 +67,7 @@ public class Robot {
     public static double headingKI = 0;
     public static double headingKD = 0.02;
     public static double headingKF = 0.025;
+    public boolean isRed;
 
 
     //*movement commands
@@ -99,6 +95,9 @@ public class Robot {
     Command setShooting(boolean shooting){
       return instant(() -> isShooting = shooting);
     }
+    Command setAiming(boolean aiming){
+        return instant(() -> autoAiming = aiming);
+    }
     Command fastShoot = sequential(
             driveOff,
             setShooting(true),
@@ -106,7 +105,8 @@ public class Robot {
             waitMs(700),
             intake.turnOff,
             shooter.close,
-            setShooting(false)
+            setShooting(false),
+            setAiming(false)
     )
             .requiring(intake, follower, shooter)
             .setPriority(2)
@@ -121,7 +121,8 @@ public class Robot {
             waitMs(700),
             intake.turnOff,
             shooter.close,
-            setShooting(false)
+            setShooting(false),
+            setAiming(false)
     )
             .requiring(intake, follower, shooter)
             .setPriority(2)
@@ -171,6 +172,11 @@ public class Robot {
             .setBlockedBehavior(BlockedBehavior.QUEUE)
             .setConflictBehavior(ConflictBehavior.QUEUE)
             ;
+    public void setIntakeState(IntakeState intakeState){
+        if (this.intakeState != intakeState){
+            this.intakeState = intakeState;
+        }
+    }
 
 
     public void init(boolean isRed, HardwareMap hwMap){
@@ -183,9 +189,9 @@ public class Robot {
         intake.init(hwMap);
         shooter.init(hwMap);
         huskyLens.init(hwMap);
-        //beamBreaks.init(hwMap);
+        beamBreaks.init(hwMap);
         //kickstand.init(hwMap);
-
+        this.isRed = isRed;
         if (isRed){
             goalPose = redGoal;
             humanPZ = redHPZ;
@@ -217,101 +223,30 @@ public class Robot {
         forwardInput = -f;
         rightInput = -r;
         rotateInput = -t;
-        if (slowDrive){
-            forwardInput *= 0.2;
-            rightInput *= 0.2;
-            rotateInput *= 0.2;
+        if (slowDrive){//!todo change
+            forwardInput *= 0.5;
+            rightInput *= 0.5;
+            rotateInput *= 0.5;
         }
-        shooter.runWithPIDF(1);
+        shooter.runWithPIDF(0.55);
         //shooter.periodic(getDistToGoal());
         //beamBreaks.periodic(isShooting, autoAiming);
-    }
-
-    public void setIntakeState(IntakeState intakeState){
-        this.intakeState = intakeState;
-    }
-    public void setDriveStateManual(DriveState driveState) {
-        if (this.driveState != driveState && driveState != DriveState.AUTOMATED) {
-            this.driveState = driveState;
-            switch (driveState) {
-                case NORMAL:
-                case AIMING:
-                    follower.startTeleOpDrive();
-                    break;
-                case OFF:
-                    follower.setTeleOpDrive(0, 0, 0);
-                    break;
-            }
-        }
-    }
-    public void setDriveStateAutomated(PathChain pathChain){
-        if (this.driveState != DriveState.AUTOMATED) {
-            this.driveState = DriveState.AUTOMATED;
-            follower.setTeleOpDrive(0, 0, 0);
-            follower.followPath(pathChain);
-        }
-    }
-
-    public void toggleAiming(){
-        if (driveState == DriveState.AIMING){
-            setDriveStateManual(DriveState.NORMAL);
-        } else if (driveState == DriveState.NORMAL) {
-            setDriveStateManual(DriveState.AIMING);
-        }
-    }
-
-
-    public void autoGate(){
-        if (beamBreaks.getBallCount() < 3 && !isShooting){
-            shooter.closeGate();
-        } else {
-            shooter.openGate();
-        }
+        beamBreaks.auraFarm();
     }
 
     public double getAngleErrorDeg(){
         double xDiff = goalPose.getX() - follower.getPose().getX();
         double yDiff = goalPose.getY() - follower.getPose().getY();
-        double targetAngle = normalizeAngle(Math.toDegrees(Math.atan2(xDiff, yDiff)), false, AngleUnit.DEGREES);
+        double angleFromCoords = Math.toDegrees(Math.atan2(yDiff, xDiff));
+        double targetAngle = normalizeAngle(angleFromCoords, false, AngleUnit.DEGREES);
+        double currentHeading = Math.toDegrees(follower.getPose().getHeading());
 
-        return targetAngle - follower.getHeading();
+        return normalizeAngle(targetAngle - currentHeading, false, AngleUnit.DEGREES);
     }
 
     public double getAimingPIDFOutput(){
         PIDController headingPID = new PIDController(headingKP, headingKI, headingKD); //robot todo tune this
-        return (Range.clip((headingPID.calculate(getAngleErrorDeg()) - headingKF * Math.signum(getAngleErrorDeg())), -1, 1));
+        return -1*(Range.clip((headingPID.calculate(getAngleErrorDeg()) - headingKF * Math.signum(getAngleErrorDeg())), -1, 1));
     }
 
-    public void startShoot(){
-        isShooting = true;
-        setIntakeState(IntakeState.SHOOTING);
-        waitForOpen = shooter.gateIsClosed();
-        if (waitForOpen){
-            shooter.openGate();
-            intake.stop();
-        } else {
-            intake.spinIn();
-        }
-        shootTimer.start();
-    }
-
-    public void handleShoot(){
-        if (waitForOpen) {
-            if (shootTimer.elapsedTime() > 300){
-                waitForOpen = false;
-                shootTimer.start();
-            }
-        } else {
-            intake.spinIn();
-        }
-
-        if (shootTimer.done()) {
-            intake.stop();
-            shooter.closeGate();
-            setDriveStateManual(DriveState.NORMAL);
-            setIntakeState(IntakeState.OFF);
-            beamBreaks.reset();
-            isShooting = false;
-        }
-    }
 }

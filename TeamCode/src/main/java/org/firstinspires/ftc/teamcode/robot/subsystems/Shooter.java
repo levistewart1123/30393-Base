@@ -56,14 +56,14 @@ public class Shooter {
         gate.setInverted(true);
 //        gateEncoder = new AbsoluteAnalogEncoder(hwMap, "Gate Encoder", 3.3, AngleUnit.RADIANS); //robot todo try out gate encoder w/telemetry
 
-        hood = new ServoEx(hwMap, "Hood", 0, Math.toRadians(120));
+        hood = new ServoEx(hwMap, "Hood");
         hood.setInverted(true);
 
         velocities.add(1, 1);
         velocities.add(6, 7);//robot todo replace these and change hood range
         //!velocities.createLUT();
-        angles.add(0, 0);
-        angles.add(50, 0);
+        angles.add(0, 0.04);
+        angles.add(50, 0.04);
         angles.add(120, 1);
         angles.add(200, 1);
         angles.createLUT();
@@ -78,11 +78,11 @@ public class Shooter {
         gate.set(0);
     }
     public void closeGate(){
-        gate.set(0.85);
+        gate.set(1);
     } //robot todo make sure this works
 
     public Command open = instant(() -> gate.set(0));
-    public Command close = instant(() -> gate.set(0.85));
+    public Command close = instant(() -> gate.set(1));
     public boolean gateIsOpen(){
         return gate.get() == 0; //robot todo try out gate encoder w/telemetry (see above)
     }

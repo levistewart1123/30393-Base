@@ -259,10 +259,11 @@ public class RobotTests {
 
     @Test
     public void getAngleErrorDeg() {
-        double xDiff = 137 - 72;
-        double yDiff = 137 - 72;
-        double targetAngle = normalizeAngle(Math.toDegrees(Math.atan2(xDiff, yDiff)), false, AngleUnit.DEGREES);
+        double xDiff = (137) - (8.5);
+        double yDiff = 137 - 137;
+        double targetAngle =  normalizeAngle(Math.toDegrees(Math.atan2(yDiff, xDiff)), false, AngleUnit.DEGREES);
 
+        double error = normalizeAngle(targetAngle - (0), false, AngleUnit.DEGREES);
         assertEquals(0, (targetAngle - 45));
     }
 

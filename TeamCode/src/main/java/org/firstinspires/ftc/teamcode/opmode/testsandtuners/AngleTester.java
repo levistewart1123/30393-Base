@@ -25,7 +25,6 @@ public class AngleTester extends CommandOpMode {
         telemetry.addData("loops: ", super.loops);
         telemetry.addData("angle error in degrees: ", robot.getAngleErrorDeg());
         super.loop();
-        telemetry.update();
     }
 
     @Override

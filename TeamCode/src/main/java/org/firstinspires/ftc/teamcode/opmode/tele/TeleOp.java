@@ -22,7 +22,8 @@ import org.firstinspires.ftc.teamcode.robot.Robot;
 import java.util.function.Supplier;
 
 /**
- *
+ *This is our base TeleOp class.
+ * Red and Blue TeleOps that extend this should be created and put on the driver station.
  */
 public class TeleOp extends CommandOpMode {
     protected Robot robot = new Robot();
@@ -92,8 +93,6 @@ public class TeleOp extends CommandOpMode {
         schedule(robot.startManualDrive);
         schedule(robot.handleGate);
         schedule(robot.handleIntake);
-        execute();
-
     }
 
     @Override
@@ -105,7 +104,7 @@ public class TeleOp extends CommandOpMode {
             robot.autoAiming = !robot.autoAiming;
         }
         //*shooting
-        if (gamepad1.xWasPressed()){
+        if (gamepad1.xWasPressed() && (robot.shooter.getFlywheelVelocity()>0.1)){
             schedule(robot.slowShoot);
         }
         //*slow mode
@@ -125,15 +124,15 @@ public class TeleOp extends CommandOpMode {
         }
         //*intake
         if (gamepad1.right_trigger > 0.1){
-            robot.intakeState = Robot.IntakeState.IN;
+            robot.setIntakeState(Robot.IntakeState.IN);
         } else if (gamepad1.left_trigger > 0.1) {
-            robot.intakeState = Robot.IntakeState.OUT;
+            robot.setIntakeState(Robot.IntakeState.OUT);
         } else {
-            robot.intakeState = Robot.IntakeState.OFF;
+            robot.setIntakeState(Robot.IntakeState.OFF);
         }
         //*telemetry
         telemetry.addData("angle error: ", (robot.getAngleErrorDeg()));
-        telemetry.addData("angle: ", (robot.follower.getHeading()));
+        telemetry.addData("angle: ", (Math.toDegrees(robot.follower.getPose().getHeading())));
         telemetry.addLine(Scheduler.isRunning(robot.shoot) ? "shooting" : "not shooting");
         telemetry.addLine(Scheduler.isRunning(robot.handleIntake) ? "manual intake" : "not manual intake");
         telemetry.addLine(Scheduler.isRunning(robot.handleGate) ? "auto gate" : "not auto gate");
@@ -142,10 +141,10 @@ public class TeleOp extends CommandOpMode {
         //lab todo add automated drive controls from old code
 
         super.loop(); //runs CommandOpMode's loop
-        telemetry.update();
     }
 
     public void stop(){
         PoseSaver.autoWasRun = false;
+        super.stop();
     }
 }

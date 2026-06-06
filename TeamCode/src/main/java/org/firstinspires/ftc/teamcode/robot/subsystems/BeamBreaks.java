@@ -26,6 +26,13 @@ public class BeamBreaks {
         bottom = hwMap.get(DigitalChannel.class, "Beam Break Bottom");
     }
 
+    /**
+     * sets SECTR lights (don't use with periodic)
+     */
+    public void auraFarm(){
+        prism.loadAnimationsFromArtboard(GoBildaPrismDriver.Artboard.ARTBOARD_7);
+    }
+
     public int getBallCount(){
         int ballAmount = 0;
         if (top.getState() && !topWasPressed){ //robot todo check these should be true and not false
