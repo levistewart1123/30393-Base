@@ -1,11 +1,10 @@
-package org.firstinspires.ftc.teamcode.opmode.testsandtuners;
+package org.firstinspires.ftc.teamcode.opmodes.testsAndTuners;
 
 import com.bylazar.configurables.annotations.Configurable;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
-import org.firstinspires.ftc.teamcode.opmode.CommandOpMode;
+import org.firstinspires.ftc.teamcode.opmodes.CommandOpMode;
 import org.firstinspires.ftc.teamcode.robot.subsystems.BeamBreaks;
-import org.firstinspires.ftc.teamcode.robot.subsystems.Shooter;
 
 @Configurable
 @TeleOp(name = "Beam Break Test", group = "2: tests")
@@ -14,7 +13,7 @@ public class BBTest extends CommandOpMode {
     @Override
     public void init() {
         super.init();
-        beamBreaks.init(hardwareMap);
+        beamBreaks.initialize(hardwareMap);
     }
 
     @Override
@@ -24,7 +23,7 @@ public class BBTest extends CommandOpMode {
 
     @Override
     public void loop() {
-        beamBreaks.periodic(false, false);
+        beamBreaks.updatePrism(false, false);
         super.loop();
     }
 

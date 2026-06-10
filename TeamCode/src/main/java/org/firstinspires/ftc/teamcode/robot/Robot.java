@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode.robot;
 import static com.pedropathing.ivy.commands.Commands.conditional;
 import static com.pedropathing.ivy.commands.Commands.infinite;
 import static com.pedropathing.ivy.commands.Commands.instant;
+import static com.pedropathing.ivy.commands.Commands.lazy;
 import static com.pedropathing.ivy.commands.Commands.waitMs;
 import static com.pedropathing.ivy.groups.Groups.sequential;
 import static com.pedropathing.ivy.pedro.PedroCommands.follow;
@@ -69,6 +70,7 @@ public class Robot {
 
 
     //*movement commands
+//    public Command fixHeading() = Command.b;
     public Command handleDriveInput = infinite(() -> {
         if (autoAiming) {
             follower.setTeleOpDrive(forwardInput, rightInput, getAimingPIDFOutput());
@@ -146,6 +148,7 @@ public class Robot {
             .setInterruptedBehavior(InterruptedBehavior.SUSPEND)
             .setBlockedBehavior(BlockedBehavior.QUEUE)
             .setConflictBehavior(ConflictBehavior.QUEUE);
+    public Command toggleClose;
 
     public Command handleIntake = infinite(
             () -> {
@@ -175,17 +178,17 @@ public class Robot {
     }
 
 
-    public void init(boolean isRed, HardwareMap hwMap) {
+    public void initialize(boolean isRed, HardwareMap hwMap) {
         List<LynxModule> allHubs = hwMap.getAll(LynxModule.class);
         for (LynxModule hub : allHubs) {
             hub.setBulkCachingMode(LynxModule.BulkCachingMode.AUTO); //we can try setting this to manual and see how much loop times improve
         }
 
         follower = Constants.createFollower(hwMap);
-        intake.init(hwMap);
-        shooter.init(hwMap);
-        huskyLens.init(hwMap);
-        beamBreaks.init(hwMap);
+        intake.initialize(hwMap);
+        shooter.initialize(hwMap);
+        huskyLens.initialize(hwMap);
+        beamBreaks.initialize(hwMap);
 
         //kickstand.init(hwMap);
         this.isRed = isRed;
@@ -211,11 +214,12 @@ public class Robot {
         return Math.sqrt(Math.pow(xDiff, 2) + Math.pow(yDiff, 2));
     }
 
-    public void periodic(double f, double r, double t) {
+    public void update(double f, double r, double t) {
         follower.update();
-        shooter.autoHood(getDistToGoal());
 
-        //kickstand.periodic();
+        shooter.update(getDistToGoal());
+
+        //kickstand.update();
 
         forwardInput = -f;
         rightInput = -r;
@@ -225,10 +229,9 @@ public class Robot {
             rightInput *= 0.5;
             rotateInput *= 0.5;
         }
-        shooter.runWithPIDF(0.55);
-        //shooter.periodic(getDistToGoal());
-        //beamBreaks.periodic(isShooting, autoAiming);
-        beamBreaks.auraFarm();
+
+        beamBreaks.updatePrism(isShooting, autoAiming);
+        //beamBreaks.auraFarm();
     }
 
     public double getAngleErrorDeg() {

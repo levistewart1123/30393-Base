@@ -14,16 +14,7 @@ import com.seattlesolvers.solverslib.hardware.motors.MotorGroup;
 import com.seattlesolvers.solverslib.hardware.servos.ServoEx;
 import com.seattlesolvers.solverslib.util.InterpLUT;
 
-import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
-
 public class Shooter {
-
-    public enum States {
-        AUTOMATIC,
-        FIXED,
-        OFF
-    }
-    States state = States.AUTOMATIC;
 
     final double GATE_OPEN_ANGLE = 5;//robot todo fix these
     final double GATE_CLOSED_ANGLE = 0;
@@ -39,10 +30,14 @@ public class Shooter {
     // Example
 
 
-    InterpLUT velocities = new InterpLUT();
-    InterpLUT angles = new InterpLUT();
+    InterpLUT closeVelocities = new InterpLUT();
+    InterpLUT closeAngles = new InterpLUT();
+    InterpLUT farVelocities = new InterpLUT();
+    InterpLUT farAngles = new InterpLUT();
+    InterpLUT currentVelocities = new InterpLUT();
+    InterpLUT currentAngles = new InterpLUT();
 
-    public void init(HardwareMap hwMap){
+    public void initialize(HardwareMap hwMap){
         flywheels = new MotorGroup(
                 new MotorEx(hwMap, "FlywheelLeft", 28, 4825).setInverted(true),
                 new MotorEx(hwMap, "FlywheelRight", 28, 4825)
@@ -58,20 +53,54 @@ public class Shooter {
 
         hood = new ServoEx(hwMap, "Hood");
         hood.setInverted(true);
+        closeVelocities.add(0, 0.52);
+        closeVelocities.add(48.5, 0.52);
+        closeVelocities.add(60, 0.55);
+        closeVelocities.add(73.75, 0.58);
+        closeVelocities.add(82.8, 0.6);
+        closeVelocities.add(91.7, 0.62); //hood 0.5
+        closeVelocities.add(100.6, 0.64); //hood 0.7
+        closeVelocities.createLUT();
+        closeAngles.add(0, 0.25);
+        closeAngles.add(82.8, 0.25);
+        closeAngles.add(91.7, 0.5);
+        closeAngles.add(100.6, 0.7);
+        closeAngles.createLUT();
+        farVelocities.add(0, 0.73);
+        farVelocities.add(129, 0.73);
+        farVelocities.add(136.83, 0.75);
+        farVelocities.add(155.08, 0.78);//hood 0.9
+        farVelocities.add(73.75, 0.58);
+        farVelocities.add(82.8, 0.6);
+        farVelocities.add(91.7, 0.62); //hood 0.5
+        farVelocities.add(100.6, 0.64); //hood 0.7
+        farVelocities.createLUT();
+        farAngles.add(0, 0.9);
+        farAngles.add(129, 0.9);
+        farAngles.add(155, 0.9);
+        farAngles.add(136.83, 0.9);
+        farAngles.createLUT();
 
-        velocities.add(1, 1);
-        velocities.add(6, 7);//robot todo replace these and change hood range
-        //!velocities.createLUT();
-        angles.add(0, 0.04);
-        angles.add(50, 0.04);
-        angles.add(120, 1);
-        angles.add(200, 1);
-        angles.createLUT();
-
-        state = States.AUTOMATIC;
+        currentAngles = closeAngles;
+        currentVelocities = closeVelocities;
     }
+
     public double getFlywheelVelocity(){
         return flywheels.getVelocity();
+    }
+
+    public void setClose(boolean close){
+        if (close) {
+            currentVelocities = closeVelocities;
+            currentAngles = closeAngles;
+        } else {
+            currentVelocities = farVelocities;
+            currentAngles = farAngles;
+        }
+    }
+    public void update(double distance){
+        flywheels.set(currentVelocities.get(distance));
+        hood.set(currentAngles.get(distance));
     }
 
     public void openGate(){
@@ -90,29 +119,6 @@ public class Shooter {
         return gate.get() == 1;
     }
 
-
-    public void periodic(double distance){
-        targetRPM = velocities.get(distance);
-        flywheels.set(targetRPM / flywheels.getMaxRPM());
-        hood.set(angles.get(distance));
-
-    }
-    public void autoHood(double distance) {
-        hood.set(angles.get(distance));
-    }
-    public void changeState(States state){
-        this.state = state;
-        switch(state){
-            case OFF:
-                flywheels.set(0);
-                break;
-            case FIXED:
-                flywheels.set(FIXED_SPEED);
-                hood.set(0);
-                break;
-        }
-
-    }
     public void setHood(double position){
         hood.set(position);
     }

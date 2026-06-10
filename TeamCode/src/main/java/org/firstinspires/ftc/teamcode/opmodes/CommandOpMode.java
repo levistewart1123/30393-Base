@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.opmode;
+package org.firstinspires.ftc.teamcode.opmodes;
 
 import com.pedropathing.ivy.Command;
 import com.pedropathing.ivy.Scheduler;

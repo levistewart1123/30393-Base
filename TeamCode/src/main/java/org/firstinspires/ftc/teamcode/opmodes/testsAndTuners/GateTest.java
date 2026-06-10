@@ -1,9 +1,9 @@
-package org.firstinspires.ftc.teamcode.opmode.testsandtuners;
+package org.firstinspires.ftc.teamcode.opmodes.testsAndTuners;
 
 import com.bylazar.configurables.annotations.Configurable;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
-import org.firstinspires.ftc.teamcode.opmode.CommandOpMode;
+import org.firstinspires.ftc.teamcode.opmodes.CommandOpMode;
 import org.firstinspires.ftc.teamcode.robot.subsystems.Shooter;
 
 @Configurable
@@ -13,7 +13,7 @@ public class GateTest extends CommandOpMode {
     @Override
     public void init() {
         super.init();
-        shooter.init(hardwareMap);
+        shooter.initialize(hardwareMap);
     }
 
     @Override

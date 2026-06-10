@@ -9,7 +9,7 @@ public class HuskyLens {
     public double leftBallAmount = 0;
     public double rightBallAmount = 0;
 
-    public void init(HardwareMap hwMap){
+    public void initialize(HardwareMap hwMap){
         huskyLens = hwMap.get(com.qualcomm.hardware.dfrobot.HuskyLens.class,"huskylens");
         huskyLens.selectAlgorithm(com.qualcomm.hardware.dfrobot.HuskyLens.Algorithm.COLOR_RECOGNITION);
     }

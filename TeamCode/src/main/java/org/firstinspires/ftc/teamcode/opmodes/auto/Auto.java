@@ -1,6 +1,5 @@
-package org.firstinspires.ftc.teamcode.opmode.auto;
+package org.firstinspires.ftc.teamcode.opmodes.auto;
 
-import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 
 import org.firstinspires.ftc.teamcode.AutoPaths;
@@ -26,7 +25,7 @@ public class Auto extends OpMode {
     
     @Override
     public void init() {
-        robot.init(isRed, hardwareMap);
+        robot.initialize(isRed, hardwareMap);
         autoPaths = new AutoPaths(robot.follower, isRed,false);
     }
 

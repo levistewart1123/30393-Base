@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.opmode.tele;
+package org.firstinspires.ftc.teamcode.opmodes.tele;
 
 import static com.pedropathing.ivy.Scheduler.schedule;
 import static com.pedropathing.ivy.pedro.PedroCommands.follow;
@@ -13,7 +13,7 @@ import com.pedropathing.paths.HeadingInterpolator;
 import com.pedropathing.paths.Path;
 import com.pedropathing.paths.PathChain;
 
-import org.firstinspires.ftc.teamcode.opmode.CommandOpMode;
+import org.firstinspires.ftc.teamcode.opmodes.CommandOpMode;
 import org.firstinspires.ftc.teamcode.PoseSaver;
 import org.firstinspires.ftc.teamcode.robot.Robot;
 
@@ -47,7 +47,7 @@ public class BaseTeleOp extends CommandOpMode {
 
     @Override
     public void init() {
-        robot.init(isRed, hardwareMap);
+        robot.initialize(isRed, hardwareMap);
         if (!isRed) {
             closeShootPose.mirror();
             gatePose.mirror();
@@ -87,7 +87,7 @@ public class BaseTeleOp extends CommandOpMode {
     @Override
     public void start() {
         super.start();
-        robot.periodic(gamepad1.left_stick_y, gamepad1.left_stick_x, gamepad1.right_stick_x);
+        robot.update(gamepad1.left_stick_y, gamepad1.left_stick_x, gamepad1.right_stick_x);
         schedule(robot.startManualDrive);
         schedule(robot.handleGate);
         schedule(robot.handleIntake);
@@ -95,7 +95,7 @@ public class BaseTeleOp extends CommandOpMode {
 
     @Override
     public void loop() {
-        robot.periodic(gamepad1.left_stick_y, gamepad1.left_stick_x, gamepad1.right_stick_x);
+        robot.update(gamepad1.left_stick_y, gamepad1.left_stick_x, gamepad1.right_stick_x);
 
         //*autoaim
         if (gamepad1.bWasPressed()){
@@ -127,6 +127,13 @@ public class BaseTeleOp extends CommandOpMode {
             robot.setIntakeState(Robot.IntakeState.OUT);
         } else {
             robot.setIntakeState(Robot.IntakeState.OFF);
+        }
+        //*close/far toggling
+        if (gamepad1.yWasPressed()){
+            robot.shooter.setClose(true);
+        }
+        if (gamepad1.xWasPressed()){
+            robot.shooter.setClose(false);
         }
         //*telemetry
         telemetry.addData("angle error: ", (robot.getAngleErrorDeg()));

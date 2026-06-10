@@ -1,18 +1,17 @@
-package org.firstinspires.ftc.teamcode.opmode.tele;
+package org.firstinspires.ftc.teamcode.opmodes.testsAndTuners;
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
-import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.teamcode.robot.Robot;
 
-@TeleOp
+@TeleOp(name = "Motor Tester (Old)", group = "2: tests")
 public class MotorTester extends LinearOpMode {
     Robot robot = new Robot();
 
     @Override
     public void runOpMode() throws InterruptedException {
-        robot.init(true, hardwareMap);
+        robot.initialize(true, hardwareMap);
         waitForStart();
         robot.follower.startTeleOpDrive();
         robot.follower.setTeleOpDrive(1, 0, 0);

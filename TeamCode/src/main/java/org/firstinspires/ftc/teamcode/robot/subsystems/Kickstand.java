@@ -2,7 +2,6 @@ package org.firstinspires.ftc.teamcode.robot.subsystems;
 
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.seattlesolvers.solverslib.hardware.motors.CRServo;
-import com.seattlesolvers.solverslib.hardware.motors.MotorEx;
 import com.seattlesolvers.solverslib.util.Timing;
 
 import java.util.concurrent.TimeUnit;
@@ -28,7 +27,7 @@ public class Kickstand {
         timer.start();
     }
 
-    public void periodic(){
+    public void update(){
         if (timer.done()) {
             left.set(0);
             right.set(0);

@@ -10,7 +10,7 @@ import com.seattlesolvers.solverslib.hardware.motors.MotorEx;
 public class Intake {
     private MotorEx intake;
 
-    public void init(HardwareMap hwMap) {
+    public void initialize(HardwareMap hwMap) {
         intake = new MotorEx(hwMap, "Intake", Motor.GoBILDA.RPM_1150);
         intake.setCachingTolerance(0.02);
     }

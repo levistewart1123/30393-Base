@@ -1,8 +1,8 @@
-package org.firstinspires.ftc.teamcode.opmode.testsandtuners;
+package org.firstinspires.ftc.teamcode.opmodes.testsAndTuners;
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
-import org.firstinspires.ftc.teamcode.opmode.CommandOpMode;
+import org.firstinspires.ftc.teamcode.opmodes.CommandOpMode;
 
 @Deprecated
 @Disabled

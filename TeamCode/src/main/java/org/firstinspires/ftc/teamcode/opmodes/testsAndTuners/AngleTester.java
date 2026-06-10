@@ -1,8 +1,8 @@
-package org.firstinspires.ftc.teamcode.opmode.testsandtuners;
+package org.firstinspires.ftc.teamcode.opmodes.testsAndTuners;
 
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
-import org.firstinspires.ftc.teamcode.opmode.CommandOpMode;
+import org.firstinspires.ftc.teamcode.opmodes.CommandOpMode;
 import org.firstinspires.ftc.teamcode.robot.Robot;
 
 /**
@@ -14,7 +14,7 @@ public class AngleTester extends CommandOpMode {
     @Override
     public void init() {
         super.init();
-        robot.init(false, hardwareMap);
+        robot.initialize(false, hardwareMap);
     }
 
     @Override

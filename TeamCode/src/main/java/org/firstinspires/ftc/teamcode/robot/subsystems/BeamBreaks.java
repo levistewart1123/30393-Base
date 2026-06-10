@@ -19,9 +19,9 @@ public class BeamBreaks {
     boolean topWasPressed, middleWasPressed, bottomWasPressed = false;
 
 
-    public void init(HardwareMap hwMap){
+    public void initialize(HardwareMap hwMap){
         prism = hwMap.get(GoBildaPrismDriver.class, "prism");
-        top = hwMap.get(DigitalChannel.class, "Beam Break Top");//robot todo wiring
+        top = hwMap.get(DigitalChannel.class, "Beam Break Top");//robot todo wiring?
         middle = hwMap.get(DigitalChannel.class, "Beam Break Middle");
         bottom = hwMap.get(DigitalChannel.class, "Beam Break Bottom");
     }
@@ -62,11 +62,11 @@ public class BeamBreaks {
         middleWasPressed = false;
         bottomWasPressed = false;
     }
-    public void turnOff(){
+    public void clearPrism(){
         prism.clearAllAnimations();
     }
 
-    public void periodic(boolean shooting, boolean autoAim){
+    public void updatePrism(boolean shooting, boolean autoAim){
         int balls = getBallCount();
         if (shooting){
             prism.loadAnimationsFromArtboard(GoBildaPrismDriver.Artboard.ARTBOARD_0); //lab todo change artboards
