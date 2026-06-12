@@ -64,12 +64,17 @@ public class Robot {
     double forwardInput, rightInput, rotateInput = 0;
     public boolean isShooting = false;
     public boolean slowDrive = false;
+    public boolean aimOnly = false;
     public static double headingKP = 0.025;
     public static double headingKI = 0;
     public static double headingKD = 0.02;
     public static double headingKF = 0.025;
     public boolean isRed;
+    public boolean closeMode;
     private double savedOdoAngleDeg;
+    private double storedForward;
+    private double storedRight;
+    private boolean wasShooting = false;
 
 
     //*movement commands
@@ -112,7 +117,7 @@ public class Robot {
             ;
     public Command handleDriveInput = infinite(() -> {
         if (autoAiming) {
-            if (limelightAim) {
+            if (!limelightAim) {
                 follower.setTeleOpDrive(forwardInput, rightInput, getAimingPIDFOutput(getOdoAngleErrorDeg()));
             } else {
                 follower.setTeleOpDrive(forwardInput, rightInput, getAimingPIDFOutput(limelight.getTx()));
@@ -142,9 +147,12 @@ public class Robot {
     Command setAiming(boolean aiming) {
         return instant(() -> autoAiming = aiming);
     }
+    Command setAimingOnly(boolean aimingOnly) {
+        return instant(() -> aimOnly = aimingOnly);
+    }
+
 
     Command fastShoot = sequential(
-            driveOff,
             setShooting(true),
             intake.setIn,
             waitMs(700),
@@ -152,11 +160,10 @@ public class Robot {
             shooter.close,
             setShooting(false),
             setAiming(false)
-    )
-            .requiring(intake, follower, shooter)
+            )
+            .requiring(intake, shooter)
             .setPriority(2);
     public Command slowShoot = sequential(
-            driveOff,
             setShooting(true),
             intake.turnOff,
             shooter.open,
@@ -167,15 +174,15 @@ public class Robot {
             shooter.close,
             setShooting(false),
             setAiming(false)
-    )
-            .requiring(intake, follower, shooter)
+            )
+            .requiring(intake, shooter)
             .setPriority(2);
     public Command shoot = conditional(
             () -> false, //!fixme
             fastShoot,
             slowShoot
     )
-            .requiring(intake, follower, shooter)
+            .requiring(intake, shooter)
             .setPriority(2);
     //*other shooter commands
     public Command handleGate = infinite(() -> {
@@ -191,7 +198,13 @@ public class Robot {
             .setInterruptedBehavior(InterruptedBehavior.SUSPEND)
             .setBlockedBehavior(BlockedBehavior.QUEUE)
             .setConflictBehavior(ConflictBehavior.QUEUE);
-    public Command toggleClose;
+    public Command setClose(boolean close){
+        return instant(() -> closeMode = close)
+                .requiring(shooter)
+                .setPriority(0)
+                .setBlockedBehavior(BlockedBehavior.QUEUE)
+                ;
+    }
 
     public Command handleIntake = infinite(
             () -> {
@@ -232,18 +245,18 @@ public class Robot {
         shooter.initialize(hwMap);
         huskyLens.initialize(hwMap);
         beamBreaks.initialize(hwMap);
-        limelight.initialize(hwMap);
+//!        limelight.initialize(hwMap);
 
         //kickstand.init(hwMap);
         this.isRed = isRed;
         if (isRed) {
             goalPose = redGoal;
             humanPZ = redHPZ;
-            limelight.setPipeline(0); //!check
+            //limelight.setPipeline(0); //!check
         } else {
             goalPose = redGoal.mirror();
             humanPZ = redHPZ.mirror();
-            limelight.setPipeline(1);
+            //limelight.setPipeline(1);
         }
         if (PoseSaver.autoWasRun) {
             follower.setStartingPose(PoseSaver.endPose);
@@ -263,19 +276,32 @@ public class Robot {
     public void update(double f, double r, double t) {
         follower.update();
 
-        limelight.update();
+//        limelight.update();
 
         shooter.update(getDistToGoal());
 
-        //kickstand.update();
 
-        forwardInput = -f;
-        rightInput = -r;
-        rotateInput = -t;
-        if (slowDrive) {//!todo change
-            forwardInput *= 0.5;
-            rightInput *= 0.5;
-            rotateInput *= 0.5;
+        //kickstand.update();
+        if (isShooting && !wasShooting){
+            storedForward = -f;
+            storedRight = -r;
+        }
+        if (isShooting){
+            forwardInput = storedForward;
+            rightInput = storedRight;
+        } else {
+            forwardInput = -f;
+            rightInput = -r;
+            rotateInput = -t;
+        }
+
+        wasShooting = isShooting;
+
+
+        if (slowDrive) {
+            forwardInput *= 0.2;
+            rightInput *= 0.2;
+            rotateInput *= 0.2;
         }
 
         beamBreaks.updatePrism(isShooting, autoAiming);

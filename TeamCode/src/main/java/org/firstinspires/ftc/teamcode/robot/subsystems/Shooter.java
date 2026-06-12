@@ -70,15 +70,11 @@ public class Shooter {
         farVelocities.add(129, 0.73);
         farVelocities.add(136.83, 0.75);
         farVelocities.add(155.08, 0.78);//hood 0.9
-        farVelocities.add(73.75, 0.58);
-        farVelocities.add(82.8, 0.6);
-        farVelocities.add(91.7, 0.62); //hood 0.5
-        farVelocities.add(100.6, 0.64); //hood 0.7
         farVelocities.createLUT();
         farAngles.add(0, 0.9);
         farAngles.add(129, 0.9);
-        farAngles.add(155, 0.9);
         farAngles.add(136.83, 0.9);
+        farAngles.add(155, 0.9);
         farAngles.createLUT();
 
         currentAngles = closeAngles;

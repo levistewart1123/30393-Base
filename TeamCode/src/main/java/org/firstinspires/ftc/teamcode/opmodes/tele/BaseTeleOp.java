@@ -101,25 +101,36 @@ public class BaseTeleOp extends CommandOpMode {
         if (gamepad1.bWasPressed()){
             robot.autoAiming = !robot.autoAiming;
         }
+
         //*shooting
         if (gamepad1.xWasPressed() && (robot.shooter.getFlywheelVelocity()>0.1)){
             schedule(robot.slowShoot);
         }
-        //*slow mode
+
+        //*close vs. far
         if (gamepad1.aWasPressed()){
+            schedule(robot.setClose(true));
+        }
+        if (gamepad1.yWasPressed()){
+            schedule(robot.setClose(false));
+        }
+
+        //*slow mode (engineer)
+        if (gamepad2.aWasPressed()){
             robot.slowDrive = !robot.slowDrive;
         }
-        //todo path following, make individual commands in Robot class to set priority, etc
-        if (gamepad1.yWasPressed()){
-            schedule(follow(robot.follower, center.get())
-                    .setBlockedBehavior(BlockedBehavior.QUEUE)
-                    .setConflictBehavior(ConflictBehavior.OVERRIDE)
-                    .setInterruptedBehavior(InterruptedBehavior.END)
-                    .setPriority(1)
-                    .requiring(robot.follower))
 
-            ;
-        }
+        //todo path following, make individual commands in Robot class to set priority, etc
+//        if (gamepad1.yWasPressed()){
+//            schedule(follow(robot.follower, center.get())
+//                    .setBlockedBehavior(BlockedBehavior.QUEUE)
+//                    .setConflictBehavior(ConflictBehavior.OVERRIDE)
+//                    .setInterruptedBehavior(InterruptedBehavior.END)
+//                    .setPriority(1)
+//                    .requiring(robot.follower))
+//            ;
+//        }
+
         //*intake
         if (gamepad1.right_trigger > 0.1){
             robot.setIntakeState(Robot.IntakeState.IN);
@@ -128,6 +139,7 @@ public class BaseTeleOp extends CommandOpMode {
         } else {
             robot.setIntakeState(Robot.IntakeState.OFF);
         }
+
         //*close/far toggling
         if (gamepad1.yWasPressed()){
             robot.shooter.setClose(true);
@@ -135,8 +147,11 @@ public class BaseTeleOp extends CommandOpMode {
         if (gamepad1.xWasPressed()){
             robot.shooter.setClose(false);
         }
+
         //*telemetry
-        telemetry.addData("angle error: ", (robot.getOdoAngleErrorDeg()));
+        telemetry.addLine(robot.closeMode ? "----CLOSE----" : "||||FAR||||");
+        telemetry.addLine(robot.autoAiming ? "AUTOAIM ON" : "Autoaim off");
+        //telemetry.addData("angle error: ", (robot.getOdoAngleErrorDeg()));
         telemetry.addData("angle: ", (Math.toDegrees(robot.follower.getPose().getHeading())));
         telemetry.addLine(Scheduler.isRunning(robot.shoot) ? "shooting" : "not shooting");
         telemetry.addLine(Scheduler.isRunning(robot.handleIntake) ? "manual intake" : "not manual intake");
