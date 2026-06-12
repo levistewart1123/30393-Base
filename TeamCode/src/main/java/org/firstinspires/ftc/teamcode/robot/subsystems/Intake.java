@@ -36,5 +36,4 @@ public class Intake {
     public Command run(int power){
         return instant(() -> intake.set(power));
     }
-
 }

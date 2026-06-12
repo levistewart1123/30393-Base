@@ -7,7 +7,7 @@ import com.pedropathing.paths.PathChain;
 
 public class AutoPaths {
     public Pose start, shoot, farHumanPlayerCollect, farHighHumanPlayerCollect, gateCollect, spikeMarkTop, spikeMarkMiddle, spikeMarkBottom;
-    public PathChain startToShoot, shootToFarRightCollect, shootToFarLeftCollect, farLeftCollectToShoot, farHumanPlayerCollectToShoot, shootToSpikeMarkTop,shootToSpikeMarkMiddle, shootToGateCollect, spikeMarkOneToShoot, spikeMarkMiddleToShoot, gateCollectToShoot;
+    public PathChain startToShoot, shootToFarRightCollect, shootToFarLeftCollect, farLeftCollectToShoot, farHumanPlayerCollectToShoot, shootToSpikeMarkTop,shootToSpikeMarkMiddle, shootToSpikeMarkBottom, shootToGateCollect, spikeMarkTopToShoot, spikeMarkMiddleToShoot,spikeMarkBottomToShoot, gateCollectToShoot;
 
     public AutoPaths(Follower follower, boolean isRed, boolean far) {
         farHumanPlayerCollect = new Pose(10, 4, Math.toRadians(180));
@@ -98,6 +98,13 @@ public class AutoPaths {
                     ))
                     .setLinearHeadingInterpolation(shoot.getHeading(), spikeMarkMiddle.getHeading())
                     .build();
+            shootToSpikeMarkBottom = follower.pathBuilder()
+                    .addPath(new BezierLine(
+                            shoot,
+                            spikeMarkBottom
+                    ))
+                    .setLinearHeadingInterpolation(shoot.getHeading(), spikeMarkBottom.getHeading())
+                    .build();
             shootToGateCollect = follower.pathBuilder()
                     .addPath(new BezierLine(
                             shoot,
@@ -112,7 +119,7 @@ public class AutoPaths {
                     ))
                     .setLinearHeadingInterpolation(gateCollect.getHeading(), shoot.getHeading())
                     .build();
-            spikeMarkOneToShoot = follower.pathBuilder()
+            spikeMarkTopToShoot = follower.pathBuilder()
                     .addPath(new BezierLine(
                             spikeMarkTop,
                             shoot
@@ -125,6 +132,13 @@ public class AutoPaths {
                             shoot
                     ))
                     .setLinearHeadingInterpolation(spikeMarkMiddle.getHeading(), shoot.getHeading())
+                    .build();
+            spikeMarkBottomToShoot = follower.pathBuilder()
+                    .addPath(new BezierLine(
+                            spikeMarkBottom,
+                            shoot
+                    ))
+                    .setLinearHeadingInterpolation(spikeMarkBottom.getHeading(), shoot.getHeading())
                     .build();
         }
     }
