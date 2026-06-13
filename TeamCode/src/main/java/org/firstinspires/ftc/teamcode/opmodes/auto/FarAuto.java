@@ -1,12 +1,12 @@
 package org.firstinspires.ftc.teamcode.opmodes.auto;
 
-import static com.pedropathing.ivy.commands.Commands.conditional;
-import static com.pedropathing.ivy.commands.Commands.waitUntil;
 import static com.pedropathing.ivy.groups.Groups.sequential;
 import static com.pedropathing.ivy.pedro.PedroCommands.follow;
-import static com.pedropathing.ivy.commands.Commands.waitMs;
-import com.pedropathing.ivy.Command;
 
+import com.pedropathing.ivy.Command;
+import com.pedropathing.ivy.Scheduler;
+
+import org.firstinspires.ftc.teamcode.opmodes.CommandOpMode;
 import org.firstinspires.ftc.teamcode.robot.Robot;
 import org.firstinspires.ftc.teamcode.robot.subsystems.HuskyLens;
 import org.firstinspires.ftc.teamcode.robot.subsystems.Intake;
@@ -14,7 +14,7 @@ import org.firstinspires.ftc.teamcode.robot.subsystems.Intake;
 import java.util.function.BooleanSupplier;
 
 
-public class Auto{
+public class FarAuto extends CommandOpMode {
 
     Command humanPlayerZoneTo, humanPlayerZoneBack;
     Robot robot = new Robot();
@@ -23,12 +23,11 @@ public class Auto{
     AutoPaths autoPaths = new AutoPaths(true,true);
     BooleanSupplier shooting = () -> robot.isShooting;
 
-    public Auto(boolean isRed) {
+    public FarAuto(boolean isRed) {
         this.isRed = isRed;
     }
     
     public Command farAuto() {
-
         return sequential(
                 //! add Flywheel spinup
                 follow(robot.follower, autoPaths.startToShoot, true),
@@ -79,5 +78,30 @@ public class Auto{
             humanPlayerZoneBack = follow(robot.follower, autoPaths.farLowHPCollectToShoot, true);
         }
         return null;
+    }
+
+    @Override
+    public void init() {
+        super.init();
+        robot.initialize(true, hardwareMap);
+    }
+
+    @Override
+    public void start() {
+        schedule(farAuto());
+        super.start();
+    }
+
+    @Override
+    public void loop() {
+        telemetry.addData("x", robot.follower.getPose().getX());
+        telemetry.addData("y", robot.follower.getPose().getY());
+        telemetry.addData("heading", robot.follower.getPose().getHeading());
+        super.loop();
+    }
+
+    @Override
+    public void stop() {
+        super.stop();
     }
 }
