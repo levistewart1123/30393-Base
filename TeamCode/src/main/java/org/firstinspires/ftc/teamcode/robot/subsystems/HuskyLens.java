@@ -9,12 +9,12 @@ public class HuskyLens {
     public static double leftBallAmount = 0;
     public static double rightBallAmount = 0;
 
-    public void initialize(HardwareMap hwMap){
-        huskyLens = hwMap.get(com.qualcomm.hardware.dfrobot.HuskyLens.class,"huskylens");
+    public void initialize(HardwareMap hwMap) {
+        huskyLens = hwMap.get(com.qualcomm.hardware.dfrobot.HuskyLens.class, "huskylens");
         huskyLens.selectAlgorithm(com.qualcomm.hardware.dfrobot.HuskyLens.Algorithm.COLOR_RECOGNITION);
     }
 
-    public static boolean determineSide() {
+    public static double sideNumber() {
         leftBallAmount = 0;
         rightBallAmount = 0;
         com.qualcomm.hardware.dfrobot.HuskyLens.Block[] blocks = huskyLens.blocks();
@@ -28,8 +28,6 @@ public class HuskyLens {
             }
         }
 
-        if (rightBallAmount > leftBallAmount || rightBallAmount == leftBallAmount){
-            return true;
-        } else return !(rightBallAmount < leftBallAmount);
+        return Double.compare(rightBallAmount, leftBallAmount);
     }
 }
