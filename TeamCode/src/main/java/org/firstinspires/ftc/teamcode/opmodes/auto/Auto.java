@@ -20,7 +20,7 @@ public class Auto{
         this.isRed = isRed;
     }
     
-    public Command RedFar() {
+    public Command Far() {
         return sequential(
                 follow(robot.follower, autoPaths.startToShoot, true),
                 robot.fastShoot,//! may need to be slowShoot
@@ -29,14 +29,17 @@ public class Auto{
                 follow(robot.follower, autoPaths.spikeMarkBottomToShoot),
                 robot.fastShoot,//! may need to be slowShoot
                 waitMs(2000),
+                follow(robot.follower, autoPaths.shootToSideDetermine),
                 determineSide(),//TODO make rotate to 90 to get reading
                 humanPlayerZoneTo,
                 humanPlayerZoneBack,
                 robot.fastShoot,//! may need to be slowShoot
+                follow(robot.follower, autoPaths.shootToSideDetermine),
                 determineSide(),//TODO make rotate to 90 to get reading
                 humanPlayerZoneTo,
                 humanPlayerZoneBack,
                 robot.fastShoot,//! may need to be slowShoot
+                follow(robot.follower, autoPaths.shootToSideDetermine),
                 determineSide(),//TODO make rotate to 90 to get reading
                 humanPlayerZoneTo,
                 humanPlayerZoneBack,
