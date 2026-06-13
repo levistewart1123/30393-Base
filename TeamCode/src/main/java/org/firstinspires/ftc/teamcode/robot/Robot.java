@@ -152,7 +152,7 @@ public class Robot {
     }
 
 
-    Command fastShoot = sequential(
+    public Command fastShoot = sequential(
             setShooting(true),
             intake.setIn,
             waitMs(700),
