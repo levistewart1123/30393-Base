@@ -1,15 +1,17 @@
 package org.firstinspires.ftc.teamcode.opmodes.auto;
 
-import com.pedropathing.follower.Follower;
 import com.pedropathing.geometry.BezierLine;
 import com.pedropathing.geometry.Pose;
 import com.pedropathing.paths.PathChain;
+import org.firstinspires.ftc.teamcode.robot.Robot;
 
 public class AutoPaths {
+
+    Robot robot = new Robot();
+
     public Pose start, shoot, farLowHPCollect, farHighHPCollect, gateCollect, spikeMarkTop, spikeMarkMiddle, spikeMarkBottom, sideDetermine;
     public PathChain startToShoot, sideDetermineToFarLowHPCollect, sideDetermineToFarHighHPCollect, farHighHPCollectToShoot, farLowHPCollectToShoot, shootToSpikeMarkTop,shootToSpikeMarkMiddle, shootToSpikeMarkBottom, shootToGateCollect, spikeMarkTopToShoot, spikeMarkMiddleToShoot,spikeMarkBottomToShoot, gateCollectToShoot, shootToSideDetermine;
-
-    public AutoPaths(Follower follower, boolean isRed, boolean far) {
+    public AutoPaths( boolean isRed, boolean far) {
         farLowHPCollect = new Pose(10, 4, Math.toRadians(180));
         farHighHPCollect = new Pose(10,25.000, Math.toRadians(180));
         gateCollect = new Pose(14.4, 58.2, Math.toRadians(144.9));
@@ -33,7 +35,7 @@ public class AutoPaths {
                 spikeMarkBottom.mirror();
             }
 
-        } else if (!far) {// When close
+        } else{// When close
             start = new Pose(22.3, 120.2, Math.toRadians(139.4));
             shoot = new Pose(59.6, 72.9, Math.toRadians(130));
 
@@ -45,42 +47,43 @@ public class AutoPaths {
                 spikeMarkMiddle.mirror();
             }
         }
-        startToShoot = follower.pathBuilder()
+
+        startToShoot = robot.follower.pathBuilder()
                 .addPath(new BezierLine(
                         start,
                         shoot
                 ))
                 .setLinearHeadingInterpolation(start.getHeading(), shoot.getHeading())
                 .build();
-        sideDetermineToFarLowHPCollect = follower.pathBuilder()
+        sideDetermineToFarLowHPCollect = robot.follower.pathBuilder()
                 .addPath(new BezierLine(
                         shoot,
                         farLowHPCollect
                 ))
                 .setLinearHeadingInterpolation(shoot.getHeading(), farLowHPCollect.getHeading())
                 .build();
-        sideDetermineToFarHighHPCollect = follower.pathBuilder()
+        sideDetermineToFarHighHPCollect = robot.follower.pathBuilder()
                 .addPath(new BezierLine(
                         shoot,
                         farHighHPCollect
                 ))
                 .setLinearHeadingInterpolation(shoot.getHeading(), farHighHPCollect.getHeading())
                 .build();
-        farHighHPCollectToShoot = follower.pathBuilder()
+        farHighHPCollectToShoot = robot.follower.pathBuilder()
                 .addPath(new BezierLine(
                         farHighHPCollect,
                         shoot
                 ))
                 .setLinearHeadingInterpolation(farHighHPCollect.getHeading(), shoot.getHeading())
                 .build();
-        farLowHPCollectToShoot = follower.pathBuilder()
+        farLowHPCollectToShoot = robot.follower.pathBuilder()
                 .addPath(new BezierLine(
                         farLowHPCollect,
                         shoot
                 ))
                 .setLinearHeadingInterpolation(farLowHPCollect.getHeading(), shoot.getHeading())
                 .build();
-        shootToSideDetermine = follower.pathBuilder()
+        shootToSideDetermine = robot.follower.pathBuilder()
                 .addPath(new BezierLine(
                         shoot,
                         sideDetermine
@@ -88,63 +91,62 @@ public class AutoPaths {
                 .setLinearHeadingInterpolation(shoot.getHeading(), sideDetermine.getHeading())
                 .build();
 
-        shootToSpikeMarkTop = follower.pathBuilder()
+        shootToSpikeMarkTop = robot.follower.pathBuilder()
                 .addPath(new BezierLine(
                         shoot,
                         spikeMarkTop
                 ))
                 .setLinearHeadingInterpolation(shoot.getHeading(), spikeMarkTop.getHeading())
                 .build();
-        shootToSpikeMarkMiddle = follower.pathBuilder()
+        shootToSpikeMarkMiddle = robot.follower.pathBuilder()
                 .addPath(new BezierLine(
                         shoot,
                         spikeMarkMiddle
                 ))
                 .setLinearHeadingInterpolation(shoot.getHeading(), spikeMarkMiddle.getHeading())
                 .build();
-        shootToSpikeMarkBottom = follower.pathBuilder()
+        shootToSpikeMarkBottom = robot.follower.pathBuilder()
                 .addPath(new BezierLine(
                         shoot,
                         spikeMarkBottom
                 ))
                 .setLinearHeadingInterpolation(shoot.getHeading(), spikeMarkBottom.getHeading())
                 .build();
-        shootToGateCollect = follower.pathBuilder()
+        shootToGateCollect = robot.follower.pathBuilder()
                 .addPath(new BezierLine(
                         shoot,
                         gateCollect
                 ))
                 .setLinearHeadingInterpolation(shoot.getHeading(), gateCollect.getHeading())
                 .build();
-        gateCollectToShoot = follower.pathBuilder()
+        gateCollectToShoot = robot.follower.pathBuilder()
                 .addPath(new BezierLine(
                         gateCollect,
                         shoot
                 ))
                 .setLinearHeadingInterpolation(gateCollect.getHeading(), shoot.getHeading())
                 .build();
-        spikeMarkTopToShoot = follower.pathBuilder()
+        spikeMarkTopToShoot = robot.follower.pathBuilder()
                 .addPath(new BezierLine(
                         spikeMarkTop,
                         shoot
                 ))
                 .setLinearHeadingInterpolation(spikeMarkTop.getHeading(), shoot.getHeading())
                 .build();
-        spikeMarkMiddleToShoot = follower.pathBuilder()
+        spikeMarkMiddleToShoot = robot.follower.pathBuilder()
                 .addPath(new BezierLine(
                         spikeMarkMiddle,
                         shoot
                 ))
                 .setLinearHeadingInterpolation(spikeMarkMiddle.getHeading(), shoot.getHeading())
                 .build();
-        spikeMarkBottomToShoot = follower.pathBuilder()
+        spikeMarkBottomToShoot = robot.follower.pathBuilder()
                 .addPath(new BezierLine(
                         spikeMarkBottom,
                         shoot
                 ))
                 .setLinearHeadingInterpolation(spikeMarkBottom.getHeading(), shoot.getHeading())
                 .build();
-
     }
 }
 

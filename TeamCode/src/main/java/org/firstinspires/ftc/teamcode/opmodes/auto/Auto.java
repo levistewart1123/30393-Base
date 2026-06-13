@@ -20,7 +20,7 @@ public class Auto{
     Robot robot = new Robot();
     Intake intake = new Intake();
     protected boolean isRed;
-    AutoPaths autoPaths = new AutoPaths(robot.follower,true,true);
+    AutoPaths autoPaths = new AutoPaths(true,true);
     BooleanSupplier shooting = () -> robot.isShooting;
 
     public Auto(boolean isRed) {

@@ -1,11 +1,12 @@
 package org.firstinspires.ftc.teamcode.opmodes.auto;
 
 import com.pedropathing.ivy.Scheduler;
+import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 
 import org.firstinspires.ftc.teamcode.robot.Robot;
-import org.jetbrains.annotations.Async;
 
+@Autonomous
 public class FarRedAuto extends OpMode {
 
     Robot robot = new Robot();
@@ -14,6 +15,7 @@ public class FarRedAuto extends OpMode {
 
     @Override
     public void init() {
+        robot.initialize(true, hardwareMap);
         Scheduler.reset();
         Scheduler.schedule(auto.farAuto());
     }
