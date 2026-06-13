@@ -31,7 +31,6 @@ public class Shooter {
 
     // Example
 
-
     InterpLUT closeVelocities = new InterpLUT();
     InterpLUT closeAngles = new InterpLUT();
     InterpLUT farVelocities = new InterpLUT();
