@@ -40,7 +40,7 @@ public class Auto{
                 determineSide(),//TODO make rotate to 90 to get reading
                 humanPlayerZoneTo,
                 humanPlayerZoneBack,
-                robot.fastShoot,//! may need to be slowShoot
+                robot.fastShoot//! may need to be slowShoot
                 );
     }
 
