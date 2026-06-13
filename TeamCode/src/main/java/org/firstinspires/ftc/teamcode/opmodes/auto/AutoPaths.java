@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode;
+package org.firstinspires.ftc.teamcode.opmodes.auto;
 
 import com.pedropathing.follower.Follower;
 import com.pedropathing.geometry.BezierLine;
@@ -6,12 +6,12 @@ import com.pedropathing.geometry.Pose;
 import com.pedropathing.paths.PathChain;
 
 public class AutoPaths {
-    public Pose start, shoot, farHumanPlayerCollect, farHighHumanPlayerCollect, gateCollect, spikeMarkTop, spikeMarkMiddle, spikeMarkBottom;
-    public PathChain startToShoot, shootToFarRightCollect, shootToFarLeftCollect, farLeftCollectToShoot, farHumanPlayerCollectToShoot, shootToSpikeMarkTop,shootToSpikeMarkMiddle, shootToSpikeMarkBottom, shootToGateCollect, spikeMarkTopToShoot, spikeMarkMiddleToShoot,spikeMarkBottomToShoot, gateCollectToShoot;
+    public Pose start, shoot, farLowHPCollect, farHighHPCollect, gateCollect, spikeMarkTop, spikeMarkMiddle, spikeMarkBottom;
+    public PathChain startToShoot, shootToFarLowHPCollect, shootToFarHighHPCollect, farHighHPCollectToShoot, farLowHPCollectToShoot, shootToSpikeMarkTop,shootToSpikeMarkMiddle, shootToSpikeMarkBottom, shootToGateCollect, spikeMarkTopToShoot, spikeMarkMiddleToShoot,spikeMarkBottomToShoot, gateCollectToShoot;
 
     public AutoPaths(Follower follower, boolean isRed, boolean far) {
-        farHumanPlayerCollect = new Pose(10, 4, Math.toRadians(180));
-        farHighHumanPlayerCollect = new Pose(10,25.000, Math.toRadians(180));
+        farLowHPCollect = new Pose(10, 4, Math.toRadians(180));
+        farHighHPCollect = new Pose(10,25.000, Math.toRadians(180));
         gateCollect = new Pose(14.4, 58.2, Math.toRadians(144.9));
         spikeMarkTop = new Pose(22.1, 82.7, Math.toRadians(180));
         spikeMarkMiddle = new Pose(15.0, 56.5, Math.toRadians(180));
@@ -24,8 +24,8 @@ public class AutoPaths {
             if (isRed) {
                 start.mirror();
                 shoot.mirror();
-                farHumanPlayerCollect.mirror();
-                farHighHumanPlayerCollect.mirror();
+                farLowHPCollect.mirror();
+                farHighHPCollect.mirror();
                 gateCollect.mirror();
                 spikeMarkTop.mirror();
                 spikeMarkMiddle.mirror();
@@ -38,33 +38,33 @@ public class AutoPaths {
                     ))
                     .setLinearHeadingInterpolation(start.getHeading(), shoot.getHeading())
                     .build();
-            shootToFarRightCollect = follower.pathBuilder()
+            shootToFarLowHPCollect = follower.pathBuilder()
                     .addPath(new BezierLine(
                             shoot,
-                            farHumanPlayerCollect
+                            farLowHPCollect
                     ))
-                    .setLinearHeadingInterpolation(shoot.getHeading(), farHumanPlayerCollect.getHeading())
+                    .setLinearHeadingInterpolation(shoot.getHeading(), farLowHPCollect.getHeading())
                     .build();
-            shootToFarLeftCollect = follower.pathBuilder()
+            shootToFarHighHPCollect = follower.pathBuilder()
                     .addPath(new BezierLine(
                             shoot,
-                            farHighHumanPlayerCollect
+                            farHighHPCollect
                     ))
-                    .setLinearHeadingInterpolation(shoot.getHeading(), farHighHumanPlayerCollect.getHeading())
+                    .setLinearHeadingInterpolation(shoot.getHeading(), farHighHPCollect.getHeading())
                     .build();
-            farLeftCollectToShoot = follower.pathBuilder()
+            farHighHPCollectToShoot = follower.pathBuilder()
                     .addPath(new BezierLine(
-                            farHighHumanPlayerCollect,
+                            farHighHPCollect,
                             shoot
                     ))
-                    .setLinearHeadingInterpolation(farHighHumanPlayerCollect.getHeading(), shoot.getHeading())
+                    .setLinearHeadingInterpolation(farHighHPCollect.getHeading(), shoot.getHeading())
                     .build();
-            farHumanPlayerCollectToShoot = follower.pathBuilder()
+            farLowHPCollectToShoot = follower.pathBuilder()
                     .addPath(new BezierLine(
-                            farHumanPlayerCollect,
+                            farLowHPCollect,
                             shoot
                     ))
-                    .setLinearHeadingInterpolation(farHumanPlayerCollect.getHeading(), shoot.getHeading())
+                    .setLinearHeadingInterpolation(farLowHPCollect.getHeading(), shoot.getHeading())
                     .build();
         } else if (!far) {// When close
             start = new Pose(22.3, 120.2, Math.toRadians(139.4));

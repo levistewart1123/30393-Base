@@ -1,20 +1,17 @@
 package org.firstinspires.ftc.teamcode.opmodes.auto;
 
-import com.qualcomm.robotcore.eventloop.opmode.OpMode;
+import static com.pedropathing.ivy.groups.Groups.sequential;
+import static com.pedropathing.ivy.pedro.PedroCommands.follow;
+import static com.pedropathing.ivy.commands.Commands.waitMs;
+import com.pedropathing.ivy.Command;
 
-import org.firstinspires.ftc.teamcode.AutoPaths;
 import org.firstinspires.ftc.teamcode.robot.Robot;
+import org.firstinspires.ftc.teamcode.robot.subsystems.HuskyLens;
 
-public class Auto extends OpMode {
-    enum Step {
-        MOVE_TO_SHOOT_PRELOADS,
-        SHOOT_PRELOADS,
-        INTAKE_MIDDLE,
-        MOVE_TO_SHOOT_MIDDLE,
-        SHOOT_MIDDLE,
-        //etc
-    }
-    Step step = Step.MOVE_TO_SHOOT_PRELOADS;
+
+public class Auto{
+
+    Command humanPlayerZoneTo, humanPlayerZoneBack;
     Robot robot = new Robot();
     protected boolean isRed;
     AutoPaths autoPaths;
@@ -23,17 +20,39 @@ public class Auto extends OpMode {
         this.isRed = isRed;
     }
     
-    @Override
-    public void init() {
-        robot.initialize(isRed, hardwareMap);
-        autoPaths = new AutoPaths(robot.follower, isRed,false);
+    public Command RedFar() {
+        return sequential(
+                follow(robot.follower, autoPaths.startToShoot, true),
+                robot.fastShoot,//! may need to be slowShoot
+                waitMs(500),
+                follow(robot.follower, autoPaths.shootToSpikeMarkBottom),
+                follow(robot.follower, autoPaths.spikeMarkBottomToShoot),
+                robot.fastShoot,//! may need to be slowShoot
+                waitMs(2000),
+                determineSide(),//TODO make rotate to 90 to get reading
+                humanPlayerZoneTo,
+                humanPlayerZoneBack,
+                robot.fastShoot,//! may need to be slowShoot
+                determineSide(),//TODO make rotate to 90 to get reading
+                humanPlayerZoneTo,
+                humanPlayerZoneBack,
+                robot.fastShoot,//! may need to be slowShoot
+                determineSide(),//TODO make rotate to 90 to get reading
+                humanPlayerZoneTo,
+                humanPlayerZoneBack,
+                robot.fastShoot,//! may need to be slowShoot
+                );
     }
 
-    @Override
-    public void loop() {
-        switch (step){
-            case MOVE_TO_SHOOT_PRELOADS:
-                break;
+    public Command determineSide() {
+        double sNumber = HuskyLens.sideNumber();
+        if (sNumber == -1){// high
+            humanPlayerZoneTo = follow(robot.follower, autoPaths.shootToFarHighHPCollect);
+            humanPlayerZoneBack = follow(robot.follower, autoPaths.farHighHPCollectToShoot, true);
+        } else { // low
+            humanPlayerZoneTo = follow(robot.follower, autoPaths.shootToFarLowHPCollect);
+            humanPlayerZoneBack = follow(robot.follower, autoPaths.farLowHPCollectToShoot, true);
         }
+        return null;
     }
 }
