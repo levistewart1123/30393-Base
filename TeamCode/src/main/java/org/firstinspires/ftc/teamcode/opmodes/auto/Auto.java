@@ -14,13 +14,13 @@ public class Auto{
     Command humanPlayerZoneTo, humanPlayerZoneBack;
     Robot robot = new Robot();
     protected boolean isRed;
-    AutoPaths autoPaths;
+    AutoPaths autoPaths = new AutoPaths(robot.follower,true,true);
 
     public Auto(boolean isRed) {
         this.isRed = isRed;
     }
     
-    public Command Far() {
+    public Command farAuto() {
         return sequential(
                 follow(robot.follower, autoPaths.startToShoot, true),
                 robot.fastShoot,//! may need to be slowShoot
@@ -50,10 +50,10 @@ public class Auto{
     public Command determineSide() {
         double sNumber = HuskyLens.sideNumber();
         if (sNumber == -1){// high
-            humanPlayerZoneTo = follow(robot.follower, autoPaths.shootToFarHighHPCollect);
+            humanPlayerZoneTo = follow(robot.follower, autoPaths.sideDetermineToFarHighHPCollect);
             humanPlayerZoneBack = follow(robot.follower, autoPaths.farHighHPCollectToShoot, true);
         } else { // low
-            humanPlayerZoneTo = follow(robot.follower, autoPaths.shootToFarLowHPCollect);
+            humanPlayerZoneTo = follow(robot.follower, autoPaths.sideDetermineToFarLowHPCollect);
             humanPlayerZoneBack = follow(robot.follower, autoPaths.farLowHPCollectToShoot, true);
         }
         return null;
