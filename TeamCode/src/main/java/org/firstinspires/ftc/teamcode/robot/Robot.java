@@ -54,7 +54,7 @@ public class Robot {
     public Follower follower;
     public BeamBreaks beamBreaks = new BeamBreaks();
     public Kickstand kickstand = new Kickstand();
-    public Limelight limelight = null;
+    public Limelight limelight = new Limelight();
     public boolean autoAiming = false;
     public boolean limelightAim = false;
     public Pose goalPose;
@@ -90,7 +90,6 @@ public class Robot {
                     autoAiming = false;
                     savedOdoAngleDeg = Math.toDegrees(follower.getPose().getHeading());
                 })
-                .requiring(follower)
                 ;
     }
     public Command correctHeadingWithLimelight() {
@@ -104,23 +103,22 @@ public class Robot {
                     autoAiming = false;
                     follower.setHeading(savedOdoAngleDeg);
                 })
-                .requiring(follower)
                 ;
     }
     public Command correctHeading = sequential(
             aimAndStoreHeading(),
+            waitMs(1000),
             correctHeadingWithLimelight()
     )
-            .requiring(follower)
             .setPriority(2)
             .setConflictBehavior(ConflictBehavior.OVERRIDE)
             ;
     public Command handleDriveInput = infinite(() -> {
         if (autoAiming) {
-            if (!limelightAim) {
-                follower.setTeleOpDrive(forwardInput, rightInput, getAimingPIDFOutput(getOdoAngleErrorDeg()));
-            } else {
+            if (limelightAim && limelight.canSeeGoal()) {
                 follower.setTeleOpDrive(forwardInput, rightInput, getAimingPIDFOutput(limelight.getTx()));
+            } else {
+                follower.setTeleOpDrive(forwardInput, rightInput, getAimingPIDFOutput(getOdoAngleErrorDeg()));
             }
         } else {
             follower.setTeleOpDrive(forwardInput, rightInput, rotateInput);
@@ -137,7 +135,8 @@ public class Robot {
             .setPriority(0)
             .setInterruptedBehavior(InterruptedBehavior.SUSPEND)
             .setConflictBehavior(ConflictBehavior.QUEUE)
-            .setBlockedBehavior(BlockedBehavior.QUEUE);
+            .setBlockedBehavior(BlockedBehavior.QUEUE)
+            ;
 
     //*shooting commands
     Command setShooting(boolean shooting) {
@@ -198,13 +197,6 @@ public class Robot {
             .setInterruptedBehavior(InterruptedBehavior.SUSPEND)
             .setBlockedBehavior(BlockedBehavior.QUEUE)
             .setConflictBehavior(ConflictBehavior.QUEUE);
-    public Command setClose(boolean close){
-        return instant(() -> closeMode = close)
-                .requiring(shooter)
-                .setPriority(0)
-                .setBlockedBehavior(BlockedBehavior.QUEUE)
-                ;
-    }
 
     public Command handleIntake = infinite(
             () -> {
@@ -245,18 +237,18 @@ public class Robot {
         shooter.initialize(hwMap);
         huskyLens.initialize(hwMap);
         beamBreaks.initialize(hwMap);
-//!        limelight.initialize(hwMap);
+        limelight.initialize(hwMap);
 
         //kickstand.init(hwMap);
         this.isRed = isRed;
         if (isRed) {
             goalPose = redGoal;
             humanPZ = redHPZ;
-            //limelight.setPipeline(0); //!check
+            limelight.setPipeline(0); //!check
         } else {
             goalPose = redGoal.mirror();
             humanPZ = redHPZ.mirror();
-            //limelight.setPipeline(1);
+            limelight.setPipeline(1);
         }
         if (PoseSaver.autoWasRun) {
             follower.setStartingPose(PoseSaver.endPose);
@@ -276,10 +268,9 @@ public class Robot {
     public void update(double f, double r, double t) {
         follower.update();
 
-//        limelight.update();
+        limelight.update();
 
         shooter.update(getDistToGoal());
-
 
         //kickstand.update();
         if (isShooting && !wasShooting){
@@ -305,14 +296,17 @@ public class Robot {
         }
 
         beamBreaks.updatePrism(isShooting, autoAiming);
-        //beamBreaks.auraFarm();
     }
 
-    public double getOdoAngleErrorDeg() {
+    public double getAngleToGoalDeg(){
         double xDiff = goalPose.getX() - follower.getPose().getX();
         double yDiff = goalPose.getY() - follower.getPose().getY();
         double angleFromCoords = Math.toDegrees(Math.atan2(yDiff, xDiff));
-        double targetAngle = normalizeAngle(angleFromCoords, false, AngleUnit.DEGREES);
+        return normalizeAngle(angleFromCoords, false, AngleUnit.DEGREES);
+    }
+
+    public double getOdoAngleErrorDeg() {
+        double targetAngle = getAngleToGoalDeg();
         double currentHeading = Math.toDegrees(follower.getPose().getHeading());
 
         return normalizeAngle(targetAngle - currentHeading, false, AngleUnit.DEGREES);

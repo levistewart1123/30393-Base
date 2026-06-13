@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode.robot.subsystems;
 import static com.pedropathing.ivy.commands.Commands.instant;
 
 import com.pedropathing.ivy.Command;
+import com.pedropathing.ivy.behaviors.BlockedBehavior;
 import com.pedropathing.math.MathFunctions;
 import com.pedropathing.math.Vector;
 import com.qualcomm.robotcore.hardware.HardwareMap;
@@ -24,6 +25,7 @@ public class Shooter {
     private ServoEx hood;
     final double FIXED_SPEED = 0.5;
     public double targetRPM = 0;
+    public boolean closeMode = true;
 
     AbsoluteAnalogEncoder gateEncoder;
 
@@ -34,8 +36,8 @@ public class Shooter {
     InterpLUT closeAngles = new InterpLUT();
     InterpLUT farVelocities = new InterpLUT();
     InterpLUT farAngles = new InterpLUT();
-    InterpLUT currentVelocities = new InterpLUT();
-    InterpLUT currentAngles = new InterpLUT();
+    InterpLUT currentVelocities;
+    InterpLUT currentAngles;
 
     public void initialize(HardwareMap hwMap){
         flywheels = new MotorGroup(
@@ -85,18 +87,17 @@ public class Shooter {
         return flywheels.getVelocity();
     }
 
-    public void setClose(boolean close){
-        if (close) {
-            currentVelocities = closeVelocities;
-            currentAngles = closeAngles;
-        } else {
-            currentVelocities = farVelocities;
-            currentAngles = farAngles;
-        }
+
+    public Command setClose(boolean close) {
+        return instant(() -> closeMode = close)
+                .requiring(this)
+                .setPriority(0)
+                .setBlockedBehavior(BlockedBehavior.QUEUE)
+                ;
     }
     public void update(double distance){
-        flywheels.set(currentVelocities.get(distance));
-        hood.set(currentAngles.get(distance));
+        flywheels.set(closeMode ? closeVelocities.get(distance) : farVelocities.get(distance));
+        hood.set(closeMode ? closeAngles.get(distance) : farAngles.get(distance));
     }
 
     public void openGate(){
@@ -118,6 +119,7 @@ public class Shooter {
     public void setHood(double position){
         hood.set(position);
     }
+    @Deprecated
     public void runNoPIDF(double power){
         flywheels.set(power); //!bad
     }

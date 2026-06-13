@@ -53,4 +53,7 @@ public class Limelight {
     public double getTx(){
         return result.getTx();
     }
+    public boolean canSeeGoal(){
+        return (result != null && result.isValid());
+    }
 }

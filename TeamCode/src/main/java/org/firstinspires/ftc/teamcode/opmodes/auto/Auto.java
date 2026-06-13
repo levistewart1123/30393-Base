@@ -2,7 +2,6 @@ package org.firstinspires.ftc.teamcode.opmodes.auto;
 
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 
-import org.firstinspires.ftc.teamcode.AutoPaths;
 import org.firstinspires.ftc.teamcode.robot.Robot;
 
 public class Auto extends OpMode {

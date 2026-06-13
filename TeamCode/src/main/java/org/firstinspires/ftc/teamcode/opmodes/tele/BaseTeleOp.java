@@ -2,9 +2,12 @@ package org.firstinspires.ftc.teamcode.opmodes.tele;
 
 import static com.pedropathing.ivy.Scheduler.schedule;
 import static com.pedropathing.ivy.pedro.PedroCommands.follow;
+import static com.pedropathing.ivy.pedro.PedroCommands.turnTo;
 
 import com.pedropathing.geometry.BezierLine;
 import com.pedropathing.geometry.Pose;
+import com.pedropathing.ivy.Command;
+import com.pedropathing.ivy.CommandBuilder;
 import com.pedropathing.ivy.Scheduler;
 import com.pedropathing.ivy.behaviors.BlockedBehavior;
 import com.pedropathing.ivy.behaviors.ConflictBehavior;
@@ -91,6 +94,7 @@ public class BaseTeleOp extends CommandOpMode {
         schedule(robot.startManualDrive);
         schedule(robot.handleGate);
         schedule(robot.handleIntake);
+        robot.beamBreaks.reset();
     }
 
     @Override
@@ -103,21 +107,25 @@ public class BaseTeleOp extends CommandOpMode {
         }
 
         //*shooting
-        if (gamepad1.xWasPressed() && (robot.shooter.getFlywheelVelocity()>0.1)){
+        if (gamepad1.xWasPressed() && (robot.shooter.getFlywheelVelocity() > 0.1)) {
             schedule(robot.slowShoot);
         }
 
         //*close vs. far
         if (gamepad1.aWasPressed()){
-            schedule(robot.setClose(true));
+            schedule(robot.shooter.setClose(true));
         }
         if (gamepad1.yWasPressed()){
-            schedule(robot.setClose(false));
+            schedule(robot.shooter.setClose(false));
         }
 
         //*slow mode (engineer)
         if (gamepad2.aWasPressed()){
             robot.slowDrive = !robot.slowDrive;
+        }
+        //*aim correction (engineer for now)
+        if (gamepad2.bWasPressed()){
+            schedule(robot.correctHeading);
         }
 
         //todo path following, make individual commands in Robot class to set priority, etc
@@ -149,8 +157,12 @@ public class BaseTeleOp extends CommandOpMode {
         }
 
         //*telemetry
-        telemetry.addLine(robot.closeMode ? "----CLOSE----" : "||||FAR||||");
+        telemetry.addLine(robot.shooter.closeMode ? "----CLOSE----" : "||||FAR||||");
         telemetry.addLine(robot.autoAiming ? "AUTOAIM ON" : "Autoaim off");
+        telemetry.addData("ball amount: ", robot.beamBreaks.getBallCount());
+        telemetry.addData("top pressed: ", robot.beamBreaks.top.isPressed());
+        telemetry.addData("middle pressed: ", robot.beamBreaks.middle.isPressed());
+        telemetry.addData("bottom pressed: ", robot.beamBreaks.bottom.isPressed());
         //telemetry.addData("angle error: ", (robot.getOdoAngleErrorDeg()));
         telemetry.addData("angle: ", (Math.toDegrees(robot.follower.getPose().getHeading())));
         telemetry.addLine(Scheduler.isRunning(robot.shoot) ? "shooting" : "not shooting");
@@ -158,6 +170,9 @@ public class BaseTeleOp extends CommandOpMode {
         telemetry.addLine(Scheduler.isRunning(robot.handleGate) ? "auto gate" : "not auto gate");
         telemetry.addLine(Scheduler.isRunning(robot.startManualDrive) ? "manual drive" : "not manual drive");
         telemetry.addData("distance to goal: ", robot.getDistToGoal());
+        telemetry.addLine(Scheduler.isRunning(robot.aimAndStoreHeading()) ? "odo aim" : "");
+        telemetry.addLine(Scheduler.isRunning(robot.correctHeadingWithLimelight()) ? "ll aim" : "");
+
         //lab todo add automated drive controls from old code
 
         super.loop(); //runs CommandOpMode's loop
