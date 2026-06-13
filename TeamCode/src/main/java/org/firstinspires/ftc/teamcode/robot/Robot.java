@@ -151,6 +151,9 @@ public class Robot {
     }
 
 
+    /**
+     * immediately intakes, then closes gate
+     */
     public Command fastShoot = sequential(
             setShooting(true),
             intake.setIn,
@@ -162,6 +165,9 @@ public class Robot {
             )
             .requiring(intake, shooter)
             .setPriority(2);
+    /**
+     * waits for gate to open, shoots, then closes gate
+     */
     public Command slowShoot = sequential(
             setShooting(true),
             intake.turnOff,
@@ -176,6 +182,9 @@ public class Robot {
             )
             .requiring(intake, shooter)
             .setPriority(2);
+    /**
+     * chooses which shoot method to use (currently only slow)
+     */
     public Command shoot = conditional(
             () -> false, //!fixme
             fastShoot,
@@ -250,12 +259,12 @@ public class Robot {
             humanPZ = redHPZ.mirror();
             limelight.setPipeline(1);
         }
-        if (PoseSaver.autoWasRun) {
-            follower.setStartingPose(PoseSaver.endPose);
-        } else {
-            follower.setStartingPose(humanPZ);
-        }
-        PoseSaver.autoWasRun = false;
+//        !if (PoseSaver.autoWasRun) {
+//            follower.setStartingPose(PoseSaver.endPose);
+//        } else {
+//            follower.setStartingPose(humanPZ);
+//        }
+//        PoseSaver.autoWasRun = false;
         follower.update();
     }
 
