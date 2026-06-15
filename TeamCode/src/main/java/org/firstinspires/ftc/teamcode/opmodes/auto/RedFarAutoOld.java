@@ -3,8 +3,8 @@ package org.firstinspires.ftc.teamcode.opmodes.auto;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 
 @Autonomous(name = "Red Far", group = "far", preselectTeleOp = "Red TeleOp")
-public class RedFarAuto extends BaseFarAuto {
-    public RedFarAuto() {
+public class RedFarAutoOld extends OldBaseFarAuto {
+    public RedFarAutoOld() {
         super(true);
     }
 }

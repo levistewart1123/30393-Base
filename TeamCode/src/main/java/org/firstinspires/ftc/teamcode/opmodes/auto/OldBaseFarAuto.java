@@ -7,19 +7,15 @@ import static com.pedropathing.ivy.pedro.PedroCommands.follow;
 import com.pedropathing.geometry.BezierLine;
 import com.pedropathing.geometry.Pose;
 import com.pedropathing.ivy.Command;
-import com.pedropathing.ivy.commands.Commands;
 import com.pedropathing.paths.PathChain;
 
 import org.firstinspires.ftc.teamcode.opmodes.CommandOpMode;
 import org.firstinspires.ftc.teamcode.robot.Robot;
 import org.firstinspires.ftc.teamcode.robot.subsystems.HuskyLens;
-import org.firstinspires.ftc.teamcode.robot.subsystems.Intake;
-
-import java.util.function.BooleanSupplier;
 
 
-public class BaseFarAuto extends CommandOpMode {
-    public BaseFarAuto(boolean isRed) {
+public class OldBaseFarAuto extends CommandOpMode {
+    public OldBaseFarAuto(boolean isRed) {
         this.isRed = isRed;
     }
     Robot robot = new Robot();
