@@ -17,13 +17,13 @@ import com.pedropathing.ivy.Command;
 import com.pedropathing.ivy.behaviors.BlockedBehavior;
 import com.pedropathing.ivy.behaviors.ConflictBehavior;
 import com.pedropathing.ivy.behaviors.InterruptedBehavior;
+import com.pedropathing.math.Vector;
 import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.util.Range;
 import com.seattlesolvers.solverslib.controller.PIDController;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
-import org.firstinspires.ftc.teamcode.PoseSaver;
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 import org.firstinspires.ftc.teamcode.robot.subsystems.BeamBreaks;
 import org.firstinspires.ftc.teamcode.robot.subsystems.HuskyLens;
@@ -58,7 +58,7 @@ public class Robot {
     public boolean autoAiming = false;
     public boolean limelightAim = false;
     public Pose goalPose;
-    public Pose redGoal = new Pose(134, 139);
+    public Pose redGoal = new Pose(139, 139);
     public Pose humanPZ;
     public Pose redHPZ = new Pose(8, 11.5, 0);
     double forwardInput, rightInput, rotateInput = 0;
@@ -85,7 +85,7 @@ public class Robot {
                     autoAiming = true;
                     limelightAim = false;
                 })
-                .setDone(() -> abs(getOdoAngleErrorDeg()) < 0.5) //doesn't account for overshoot
+                .setDone(() -> abs(getOdoAngleErrorDeg(false)) < 0.5) //doesn't account for overshoot
                 .setEnd((endCondition) -> {
                     autoAiming = false;
                     savedOdoAngleDeg = Math.toDegrees(follower.getPose().getHeading());
@@ -118,13 +118,12 @@ public class Robot {
             if (limelightAim && limelight.canSeeGoal()) {
                 follower.setTeleOpDrive(forwardInput, rightInput, getAimingPIDFOutput(limelight.getTx()));
             } else {
-                follower.setTeleOpDrive(forwardInput, rightInput, getAimingPIDFOutput(getOdoAngleErrorDeg()));
+                follower.setTeleOpDrive(forwardInput, rightInput, getAimingPIDFOutput(getOdoAngleErrorDeg(true)));
             }
         } else {
             follower.setTeleOpDrive(forwardInput, rightInput, rotateInput);
         }
     });
-    public Command driveOff = instant(() -> follower.setTeleOpDrive(0, 0, 0));
     Command startTeleOpDrive = instant(() -> follower.startTeleOpDrive());
 
     public Command startManualDrive = sequential(
@@ -140,7 +139,12 @@ public class Robot {
 
     //*shooting commands
     Command setShooting(boolean shooting) {
-        return instant(() -> isShooting = shooting);
+        return instant(() -> {
+            isShooting = shooting;
+            if (!shooting){
+                beamBreaks.reset();
+            }
+        });
     }
 
     Command setAiming(boolean aiming) {
@@ -183,7 +187,7 @@ public class Robot {
             .requiring(intake, shooter)
             .setPriority(2);
     /**
-     * chooses which shoot method to use (currently only slow)
+     * chooses which shoot method to use based on gate (only false)
      */
     public Command shoot = conditional(
             () -> false, //!fixme
@@ -193,12 +197,15 @@ public class Robot {
             .requiring(intake, shooter)
             .setPriority(2);
     //*other shooter commands
+    /**
+     * automatically opens gate using beam breaks
+     */
     public Command handleGate = infinite(() -> {
-//                if (beamBreaks.getBallCount() == 3) {
-//                    shooter.openGate();
-//                } else {
+                if (beamBreaks.getBallCount() == 3 && intakeState != IntakeState.IN) {
+                    shooter.openGate();
+                } else {
                 shooter.closeGate();
-                //}
+                }
             }
     )
             .requiring(shooter)
@@ -211,7 +218,9 @@ public class Robot {
             () -> {
                 switch (intakeState) {
                     case IN:
-                        intake.spinIn();
+                        if (shooter.gateIsClosed()) {
+                            intake.spinIn();
+                        }
                         break;
                     case OUT:
                         intake.spinOut();
@@ -231,6 +240,9 @@ public class Robot {
     public void setIntakeState(IntakeState intakeState) {
         if (this.intakeState != intakeState) {
             this.intakeState = intakeState;
+        }
+        if (intakeState == IntakeState.OUT){ //this happens continuously, regardless of if it's new or not
+            beamBreaks.reset();
         }
     }
 
@@ -307,15 +319,21 @@ public class Robot {
         beamBreaks.updatePrism(isShooting, autoAiming);
     }
 
-    public double getAngleToGoalDeg(){
+    public double getRealAngleToGoalDeg(){
         double xDiff = goalPose.getX() - follower.getPose().getX();
         double yDiff = goalPose.getY() - follower.getPose().getY();
         double angleFromCoords = Math.toDegrees(Math.atan2(yDiff, xDiff));
         return normalizeAngle(angleFromCoords, false, AngleUnit.DEGREES);
     }
+    public double getAngleToSotmGoalDeg(){
+        double xDiff = getSotmOffset().getX() - follower.getPose().getX();
+        double yDiff = getSotmOffset().getY() - follower.getPose().getY();
+        double angleFromCoords = Math.toDegrees(Math.atan2(yDiff, xDiff));
+        return normalizeAngle(angleFromCoords, false, AngleUnit.DEGREES);
+    }
 
-    public double getOdoAngleErrorDeg() {
-        double targetAngle = getAngleToGoalDeg();
+    public double getOdoAngleErrorDeg(boolean sotm) {
+        double targetAngle = sotm ? getAngleToSotmGoalDeg() : getRealAngleToGoalDeg();
         double currentHeading = Math.toDegrees(follower.getPose().getHeading());
 
         return normalizeAngle(targetAngle - currentHeading, false, AngleUnit.DEGREES);
@@ -325,6 +343,17 @@ public class Robot {
         PIDController headingPID = new PIDController(headingKP, headingKI, headingKD); //robot todo tune this
         return -1 * (Range.clip((headingPID.calculate(angleErrorDeg) - headingKF * Math.signum(angleErrorDeg)), -1, 1));
     }
+
+    public Pose getSotmOffset(){
+        Vector velocity = follower.getVelocity();
+        double seconds = shooter.secShotTakes.get(getDistToGoal());
+        return new Pose(
+                goalPose.getX() + velocity.getXComponent(),
+                goalPose.getY() + velocity.getYComponent()
+        );
+    }
+
+    //*Kalman filter stuff (not used)
 
     double x = 0; // your initial state
     double Q = 0.1; // your model covariance

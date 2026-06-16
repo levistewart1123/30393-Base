@@ -15,6 +15,8 @@ import com.seattlesolvers.solverslib.hardware.motors.MotorGroup;
 import com.seattlesolvers.solverslib.hardware.servos.ServoEx;
 import com.seattlesolvers.solverslib.util.InterpLUT;
 
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+
 public class Shooter {
 
     final double GATE_OPEN_ANGLE = 5;//robot todo fix these
@@ -31,12 +33,28 @@ public class Shooter {
 
     // Example
 
+    /**
+     * takes in distance and returns flywheel power
+     */
     InterpLUT closeVelocities = new InterpLUT();
+    /**
+     * takes in distance and returns hood angle
+     */
     InterpLUT closeAngles = new InterpLUT();
+    /**
+     * takes in distance and returns flywheel power
+     */
     InterpLUT farVelocities = new InterpLUT();
+    /**
+     * takes in distance and returns hood angle
+     */
     InterpLUT farAngles = new InterpLUT();
-    InterpLUT currentVelocities;
-    InterpLUT currentAngles;
+    /**
+     * takes in distance and returns how long it
+     * will take an artifact to reach the goal in seconds.
+     */
+    public InterpLUT secShotTakes = new InterpLUT();
+
 
     public void initialize(HardwareMap hwMap){
         flywheels = new MotorGroup(
@@ -50,7 +68,7 @@ public class Shooter {
 
         gate = new ServoEx(hwMap, "Gate");
         gate.setInverted(true);
-//        gateEncoder = new AbsoluteAnalogEncoder(hwMap, "Gate Encoder", 3.3, AngleUnit.RADIANS); //robot todo try out gate encoder w/telemetry
+        gateEncoder = new AbsoluteAnalogEncoder(hwMap, "Gate Position", 3.3, AngleUnit.DEGREES); //robot todo try out gate encoder w/telemetry
 
         hood = new ServoEx(hwMap, "Hood");
         hood.setInverted(true);
@@ -77,9 +95,13 @@ public class Shooter {
         farAngles.add(136.83, 0.9);
         farAngles.add(155, 0.9);
         farAngles.createLUT();
-
-        currentAngles = closeAngles;
-        currentVelocities = closeVelocities;
+        secShotTakes.add(95.3,0.4);
+        secShotTakes.add(75,0.4);
+        secShotTakes.add(56,0.4);
+        secShotTakes.add(113.25,0.4);
+        secShotTakes.add(227,0.4);
+        secShotTakes.add(200,0.4);
+        //secShotTakes.createLUT();
     }
 
     public double getFlywheelVelocity(){
@@ -113,6 +135,10 @@ public class Shooter {
     }
     public boolean gateIsClosed(){
         return gate.get() == 1;
+    }
+
+    public double getGateEncoderPosDeg(){
+        return gateEncoder.getCurrentPosition();
     }
 
     public void setHood(double position){

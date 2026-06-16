@@ -13,6 +13,7 @@ import org.firstinspires.ftc.teamcode.opmodes.CommandOpMode;
 import org.firstinspires.ftc.teamcode.robot.Robot;
 import org.firstinspires.ftc.teamcode.robot.subsystems.HuskyLens;
 
+@Deprecated
 
 public class OldBaseFarAuto extends CommandOpMode {
     public OldBaseFarAuto(boolean isRed) {

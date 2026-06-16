@@ -3,18 +3,14 @@ package org.firstinspires.ftc.teamcode.opmodes.testsAndTuners;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.teamcode.opmodes.CommandOpMode;
-import org.firstinspires.ftc.teamcode.robot.Robot;
-
-/**
- * for autoaim testing
- */
-@TeleOp(name = "Autoaim Test", group = "2: tests")
-public class OdometryAngleTester extends CommandOpMode {
-    private Robot robot = new Robot();
+import org.firstinspires.ftc.teamcode.robot.subsystems.Shooter;
+@TeleOp
+public class GateEncoderTester extends CommandOpMode {
+    private Shooter shooter = new Shooter();
     @Override
     public void init() {
         super.init();
-        robot.initialize(false, hardwareMap);
+        shooter.initialize(hardwareMap);
     }
 
     @Override
@@ -24,9 +20,12 @@ public class OdometryAngleTester extends CommandOpMode {
 
     @Override
     public void loop() {
-        robot.follower.update();
-        telemetry.addData("loops: ", super.loops);
-        telemetry.addData("angle error in degrees: ", robot.getOdoAngleErrorDeg(false));
+//        if (super.loops < 1000) {
+//            shooter.closeGate();
+//        } else {
+//            shooter.openGate();
+//        }
+        telemetry.addData("encoder pos (deg): ", shooter.getGateEncoderPosDeg());
         super.loop();
     }
 

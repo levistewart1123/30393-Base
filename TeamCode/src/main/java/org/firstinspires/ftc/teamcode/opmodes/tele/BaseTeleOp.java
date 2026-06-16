@@ -160,16 +160,17 @@ public class BaseTeleOp extends CommandOpMode {
         telemetry.addLine(robot.shooter.closeMode ? "----CLOSE----" : "||||FAR||||");
         telemetry.addLine(robot.autoAiming ? "AUTOAIM ON" : "Autoaim off");
         telemetry.addData("ball amount: ", robot.beamBreaks.getBallCount());
-        telemetry.addData("top pressed: ", robot.beamBreaks.top.isPressed());
-        telemetry.addData("middle pressed: ", robot.beamBreaks.middle.isPressed());
-        telemetry.addData("bottom pressed: ", robot.beamBreaks.bottom.isPressed());
+//        telemetry.addData("top pressed: ", robot.beamBreaks.top.isPressed());
+//        telemetry.addData("middle pressed: ", robot.beamBreaks.middle.isPressed());
+//        telemetry.addData("bottom pressed: ", robot.beamBreaks.bottom.isPressed());
         //telemetry.addData("angle error: ", (robot.getOdoAngleErrorDeg()));
-        telemetry.addData("angle: ", (Math.toDegrees(robot.follower.getPose().getHeading())));
+//        telemetry.addData("angle: ", (Math.toDegrees(robot.follower.getPose().getHeading())));
         telemetry.addLine(Scheduler.isRunning(robot.shoot) ? "shooting" : "not shooting");
         telemetry.addLine(Scheduler.isRunning(robot.handleIntake) ? "manual intake" : "not manual intake");
         telemetry.addLine(Scheduler.isRunning(robot.handleGate) ? "auto gate" : "not auto gate");
         telemetry.addLine(Scheduler.isRunning(robot.startManualDrive) ? "manual drive" : "not manual drive");
         telemetry.addData("distance to goal: ", robot.getDistToGoal());
+        telemetry.addData("Pose: ", robot.follower.getPose());
         telemetry.addLine(Scheduler.isRunning(robot.aimAndStoreHeading()) ? "odo aim" : "");
         telemetry.addLine(Scheduler.isRunning(robot.correctHeadingWithLimelight()) ? "ll aim" : "");
 
