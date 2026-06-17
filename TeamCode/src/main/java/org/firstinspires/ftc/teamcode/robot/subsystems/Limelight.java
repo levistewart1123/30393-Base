@@ -1,16 +1,13 @@
 package org.firstinspires.ftc.teamcode.robot.subsystems;
 
-import com.pedropathing.ftc.FTCCoordinates;
 import com.pedropathing.ftc.InvertedFTCCoordinates;
 import com.pedropathing.ftc.PoseConverter;
-import com.pedropathing.geometry.CoordinateSystem;
 import com.pedropathing.geometry.Pose;
 import com.qualcomm.hardware.limelightvision.LLResult;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
-import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose3D;
 
@@ -33,7 +30,7 @@ public class Limelight {
         result = limelight3A.getLatestResult();
     }
 
-    public Pose getPose() {
+    public Pose getMt1Pose() {
         if (result != null && result.isValid()) {
             Pose3D mt1Pose = result.getBotpose();
 //            limelight3A.updateRobotOrientation();
@@ -56,4 +53,5 @@ public class Limelight {
     public boolean canSeeGoal(){
         return (result != null && result.isValid());
     }
+
 }

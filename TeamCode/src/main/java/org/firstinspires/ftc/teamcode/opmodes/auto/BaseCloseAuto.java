@@ -1,8 +1,10 @@
 package org.firstinspires.ftc.teamcode.opmodes.auto;
 
 import static com.pedropathing.ivy.commands.Commands.waitMs;
+import static com.pedropathing.ivy.commands.Commands.waitUntil;
 import static com.pedropathing.ivy.groups.Groups.deadline;
 import static com.pedropathing.ivy.groups.Groups.parallel;
+import static com.pedropathing.ivy.groups.Groups.race;
 import static com.pedropathing.ivy.groups.Groups.repeat;
 import static com.pedropathing.ivy.groups.Groups.sequential;
 import static com.pedropathing.ivy.pedro.PedroCommands.follow;
@@ -13,6 +15,7 @@ import com.pedropathing.geometry.Pose;
 import com.pedropathing.ivy.Command;
 import com.pedropathing.paths.PathChain;
 
+import org.firstinspires.ftc.teamcode.PoseSaver;
 import org.firstinspires.ftc.teamcode.opmodes.CommandOpMode;
 import org.firstinspires.ftc.teamcode.robot.Robot;
 
@@ -43,10 +46,10 @@ public class BaseCloseAuto extends CommandOpMode {
         spikeMarkBottom = new Pose(11.6, 40, Math.toRadians(180));
 
         start = new Pose(22.3, 120.2, Math.toRadians(139.4));
-        shoot = new Pose(59.6, 72.9,Math.toRadians(130));
-        midSpikeControl = new Pose(57, 58);
-        midShootControl = new Pose(57, 58);
-        topSpikeControl = new Pose(56,85);
+        shoot = new Pose(58, 72.9,Math.toRadians(130));
+        midSpikeControl = new Pose(50, 58).mirror();
+        midShootControl = new Pose(50, 58).mirror();
+        topSpikeControl = new Pose(56,85).mirror();
 
 
 
@@ -58,6 +61,10 @@ public class BaseCloseAuto extends CommandOpMode {
             spikeMarkTop.mirror();
             spikeMarkMiddle.mirror();
             spikeMarkBottom.mirror();
+
+            midSpikeControl.mirror();
+            midShootControl.mirror();
+            topSpikeControl.mirror();
         }
 
         robot.follower.setPose(start);
@@ -150,7 +157,7 @@ public class BaseCloseAuto extends CommandOpMode {
                 repeat(sequential(
                         startIntaking,
                         deadline(
-                            waitMs(3000), //todo change to waitUntil with beam breaks
+                            race(waitMs(5000), waitUntil(() -> robot.beamBreaks.getBallCount() == 3)), //todo change to waitUntil with beam breaks
                             follow(robot.follower, shootToGateCollect)
                         ),
                         parallel(follow(robot.follower, gateCollectToShoot), prepareShoot),
@@ -174,6 +181,8 @@ public class BaseCloseAuto extends CommandOpMode {
 
     @Override
     public void stop() {
+        PoseSaver.autoWasRun = true;
+        PoseSaver.endPose = robot.follower.getPose();
         super.stop();
     }
 }
