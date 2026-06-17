@@ -7,7 +7,8 @@ import org.firstinspires.ftc.teamcode.opmodes.CommandOpMode;
 import org.firstinspires.ftc.teamcode.robot.subsystems.Intake;
 
 @Configurable
-@TeleOp(name = "Intake Servo Tuner", group = "1: tuners")
+@Deprecated
+@TeleOp(name = "Intake Servo Tuner (needs public intake servos)", group = "1: tuners")
 public class IntakeServoTuner extends CommandOpMode {
     private Intake intake = new Intake();
     public static double lPos, rPos = 0;
@@ -19,13 +20,15 @@ public class IntakeServoTuner extends CommandOpMode {
 
     @Override
     public void start() {
-        intake.left.set(lPos);
-        intake.right.set(rPos);
+//        intake.left.set(lPos);
+//        intake.right.set(rPos);
         super.start();
     }
 
     @Override
     public void loop() {
+//        intake.left.set(lPos);
+//        intake.right.set(rPos);
         super.loop();
     }
 

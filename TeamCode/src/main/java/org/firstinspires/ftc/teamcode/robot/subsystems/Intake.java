@@ -10,17 +10,19 @@ import com.seattlesolvers.solverslib.hardware.servos.ServoEx;
 
 public class Intake {
     private MotorEx intake;
-    public ServoEx left, right; //!Public
-    private final double lUpPos = 0;
-    private final double rUpPos = 0;
-    private final double lDownPos = 0;
-    private final double rDownPos = 0;
+    private ServoEx left, right;
+    private final double L_UP = 0.95;
+    private final double R_UP = 0.3;
+    private final double L_DOWN = 0.5;
+    private final double R_DOWN = 0;
 
     public void initialize(HardwareMap hwMap) {
         intake = new MotorEx(hwMap, "Intake", Motor.GoBILDA.RPM_1150);
         left = new ServoEx(hwMap, "IntakeServoL");
         right = new ServoEx(hwMap, "IntakeServoR");
         intake.setCachingTolerance(0.02);
+        left.setCachingTolerance(0.02);
+        right.setCachingTolerance(0.02);
     }
 
 
@@ -48,15 +50,20 @@ public class Intake {
         return instant(() -> intake.set(power));
     }
 
-    public Command lift = instant(() -> {
-        left.set(lUpPos);
-        right.set(rUpPos);
+    public void lift(){
+        left.set(L_UP);
+        right.set(R_UP);
     }
-    );
-    public Command lower = instant(() -> {
-                left.set(lDownPos);
-                right.set(rDownPos);
-            }
-    );
+
+    public void lower(){
+        left.set(L_DOWN);
+        right.set(R_DOWN);
+    }
+
+    public Command lift = instant(this::lift)
+            .requiring(this);
+
+    public Command lower = instant(this::lower)
+            .requiring(this);
 
 }

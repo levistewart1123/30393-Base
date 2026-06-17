@@ -1,21 +1,13 @@
-package org.firstinspires.ftc.teamcode.opmodes.tele;
+package org.firstinspires.ftc.teamcode.opmodes;
 
 import static com.pedropathing.ivy.Scheduler.schedule;
 import static com.pedropathing.ivy.pedro.PedroCommands.follow;
 import static com.pedropathing.ivy.pedro.PedroCommands.turnTo;
 
-import com.pedropathing.geometry.BezierLine;
 import com.pedropathing.geometry.Pose;
-import com.pedropathing.ivy.Scheduler;
-import com.pedropathing.paths.HeadingInterpolator;
-import com.pedropathing.paths.Path;
-import com.pedropathing.paths.PathChain;
 
-import org.firstinspires.ftc.teamcode.opmodes.CommandOpMode;
 import org.firstinspires.ftc.teamcode.PoseSaver;
 import org.firstinspires.ftc.teamcode.robot.Robot;
-
-import java.util.function.Supplier;
 
 /**
  *This is our base TeleOp class.
@@ -24,6 +16,9 @@ import java.util.function.Supplier;
 public class BaseTeleOp extends CommandOpMode {
     protected Robot robot = new Robot();
 
+    /**
+     * this is set by the constructor in red/blue teleop classes
+     */
     protected boolean isRed;
 
     protected Pose closeShootPose = new Pose(39, 53, Math.toRadians(270));
@@ -100,7 +95,28 @@ public class BaseTeleOp extends CommandOpMode {
         if (gamepad2.xWasPressed()){
             robot.follower.setPose(robot.limelight.getMt1Pose());
         }
-        //TODO copy engineer controls, intake lift, KS
+
+        //*engineer controls
+        if (gamepad2.dpadUpWasPressed()) {
+            robot.follower.setPose(new Pose(robot.follower.getPose().getX(), robot.follower.getPose().getY() + 0.5, robot.follower.getPose().getHeading()));
+        }
+        if (gamepad2.dpadLeftWasPressed()) {
+            robot.follower.setPose(new Pose(robot.follower.getPose().getX() - 0.5, robot.follower.getPose().getY(), robot.follower.getPose().getHeading()));
+        }
+        if (gamepad2.dpadRightWasPressed()) {
+            robot.follower.setPose(new Pose(robot.follower.getPose().getX() + 0.5, robot.follower.getPose().getY(), robot.follower.getPose().getHeading()));
+        }
+        if (gamepad2.dpadDownWasPressed()) {
+            robot.follower.setPose(new Pose(robot.follower.getPose().getX(), robot.follower.getPose().getY() - 0.5, robot.follower.getPose().getHeading()));
+        }
+        if (gamepad2.leftBumperWasPressed()){
+            robot.follower.setPose(new Pose(robot.follower.getPose().getX(), robot.follower.getPose().getY(), robot.follower.getPose().getHeading() - Math.toRadians(0.5)));
+        }
+        if (gamepad2.rightBumperWasPressed()){
+            robot.follower.setPose(new Pose(robot.follower.getPose().getX(), robot.follower.getPose().getY(), robot.follower.getPose().getHeading() + Math.toRadians(0.5)));
+        }
+
+        //TODO copy engineer controls, intake lift
 
         //todo path following, make individual commands in Robot class to set priority, etc
 //        if (gamepad1.yWasPressed()){

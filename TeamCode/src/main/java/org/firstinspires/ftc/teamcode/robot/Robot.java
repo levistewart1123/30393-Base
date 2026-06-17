@@ -60,7 +60,7 @@ public class Robot {
     public Pose goalPose;
     public Pose redGoal = new Pose(139, 139);
     public Pose hpz;
-    public Pose redHpz = new Pose(8, 11.5, 0);
+    public Pose redHpz = new Pose(10.5, 10.5, 0);
     double forwardInput, rightInput, rotateInput = 0;
     public boolean isShooting = false;
     public boolean slowDrive = false;
@@ -217,6 +217,11 @@ public class Robot {
 
     public Command handleIntake = infinite(
             () -> {
+                if (beamBreaks.getBallCount() == 3){
+                    intake.lift();
+                } else {
+                    intake.lower();
+                }
                 switch (intakeState) {
                     case IN:
                         if (shooter.gateIsClosed()) {
