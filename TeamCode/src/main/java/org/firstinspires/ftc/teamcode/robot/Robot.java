@@ -59,8 +59,8 @@ public class Robot {
     public boolean limelightAim = false;
     public Pose goalPose;
     public Pose redGoal = new Pose(139, 139);
-    public Pose humanPZ;
-    public Pose redHPZ = new Pose(8, 11.5, 0);
+    public Pose hpz;
+    public Pose redHpz = new Pose(8, 11.5, 0);
     double forwardInput, rightInput, rotateInput = 0;
     public boolean isShooting = false;
     public boolean slowDrive = false;
@@ -125,6 +125,7 @@ public class Robot {
         }
     });
     Command startTeleOpDrive = instant(() -> follower.startTeleOpDrive());
+    Command driveOff = instant(() -> follower.setTeleOpDrive(0,0,0));
 
     public Command startManualDrive = sequential(
             startTeleOpDrive,
@@ -264,19 +265,13 @@ public class Robot {
         this.isRed = isRed;
         if (isRed) {
             goalPose = redGoal;
-            humanPZ = redHPZ;
+            hpz = redHpz;
             limelight.setPipeline(0); //!check
         } else {
             goalPose = redGoal.mirror();
-            humanPZ = redHPZ.mirror();
+            hpz = redHpz.mirror();
             limelight.setPipeline(1);
         }
-//        !if (PoseSaver.autoWasRun) {
-//            follower.setStartingPose(PoseSaver.endPose);
-//        } else {
-//            follower.setStartingPose(humanPZ);
-//        }
-//        PoseSaver.autoWasRun = false;
         follower.update();
     }
 
@@ -294,20 +289,20 @@ public class Robot {
         shooter.update(getDistToGoal());
 
         //kickstand.update();
-        if (isShooting && !wasShooting){
-            storedForward = -f;
-            storedRight = -r;
-        }
-        if (isShooting){
-            forwardInput = storedForward;
-            rightInput = storedRight;
-        } else {
+//        if (isShooting && !wasShooting){
+//            storedForward = -f;
+//            storedRight = -r;
+//        }
+//        if (isShooting){
+//            forwardInput = storedForward;
+//            rightInput = storedRight;
+//        } else {
             forwardInput = -f;
             rightInput = -r;
             rotateInput = -t;
-        }
-
-        wasShooting = isShooting;
+//        }
+//
+//        wasShooting = isShooting;
 
 
         if (slowDrive) {

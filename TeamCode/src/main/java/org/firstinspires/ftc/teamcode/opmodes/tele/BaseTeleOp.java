@@ -6,12 +6,7 @@ import static com.pedropathing.ivy.pedro.PedroCommands.turnTo;
 
 import com.pedropathing.geometry.BezierLine;
 import com.pedropathing.geometry.Pose;
-import com.pedropathing.ivy.Command;
-import com.pedropathing.ivy.CommandBuilder;
 import com.pedropathing.ivy.Scheduler;
-import com.pedropathing.ivy.behaviors.BlockedBehavior;
-import com.pedropathing.ivy.behaviors.ConflictBehavior;
-import com.pedropathing.ivy.behaviors.InterruptedBehavior;
 import com.pedropathing.paths.HeadingInterpolator;
 import com.pedropathing.paths.Path;
 import com.pedropathing.paths.PathChain;
@@ -37,13 +32,6 @@ public class BaseTeleOp extends CommandOpMode {
     protected Pose farAlliedShootPose = new Pose(57, 15, Math.toRadians(180 - 121.1));
     protected Pose farOpposingIntakePose = new Pose(144 - 12.0, 9.25, Math.toRadians(0));
     protected Pose farAlliedIntakePose = new Pose(12.0, 9.25, Math.toRadians(180));
-    private Supplier<PathChain> center;
-    private Supplier<PathChain> pickupGate;
-    private Supplier<PathChain> farOpposingShoot; //used
-    private Supplier<PathChain> farAlliedShoot;
-    private Supplier<PathChain> farOpposingIntake;
-    private Supplier<PathChain> farAlliedIntake;
-
     public BaseTeleOp(boolean isRed) {
         this.isRed = isRed;
     }
@@ -51,6 +39,12 @@ public class BaseTeleOp extends CommandOpMode {
     @Override
     public void init() {
         robot.initialize(isRed, hardwareMap);
+        if (PoseSaver.autoWasRun) {
+            robot.follower.setStartingPose(PoseSaver.endPose);
+        } else {
+            robot.follower.setStartingPose(robot.hpz);
+        }
+        PoseSaver.autoWasRun = false;
         if (!isRed) {
             closeShootPose.mirror();
             gatePose.mirror();
@@ -59,30 +53,6 @@ public class BaseTeleOp extends CommandOpMode {
             farOpposingIntakePose.mirror();
             farAlliedIntakePose.mirror();
         }
-        center = () -> robot.follower.pathBuilder()
-                .addPath(new Path(new BezierLine(robot.follower::getPose, new Pose(72, 72, Math.toRadians(0)))))
-                .setHeadingInterpolation(HeadingInterpolator.linearFromPoint(robot.follower::getHeading, Math.toRadians(0), 0.8))
-                .build();
-        pickupGate = () -> robot.follower.pathBuilder()
-                .addPath(new Path(new BezierLine(robot.follower::getPose, gatePose)))
-                .setHeadingInterpolation(HeadingInterpolator.linearFromPoint(robot.follower::getHeading, gatePose.getHeading(), 0.8))
-                .build();
-        farOpposingShoot = () -> robot.follower.pathBuilder()
-                .addPath(new Path(new BezierLine(robot.follower::getPose, farOpposingShootPose)))
-                .setHeadingInterpolation(HeadingInterpolator.linearFromPoint(robot.follower::getHeading, farOpposingShootPose.getHeading(), 0.8))
-                .build();
-        farAlliedShoot = () -> robot.follower.pathBuilder()
-                .addPath(new Path(new BezierLine(robot.follower::getPose, farAlliedShootPose)))
-                .setHeadingInterpolation(HeadingInterpolator.linearFromPoint(robot.follower::getHeading, farAlliedShootPose.getHeading(), 0.8))
-                .build();
-        farOpposingIntake = () -> robot.follower.pathBuilder()
-                .addPath(new Path(new BezierLine(robot.follower::getPose, farOpposingIntakePose)))
-                .setConstantHeadingInterpolation(farOpposingIntakePose.getHeading())
-                .build();
-        farAlliedIntake = () -> robot.follower.pathBuilder()
-                .addPath(new Path(new BezierLine(robot.follower::getPose, farAlliedIntakePose)))
-                .setConstantHeadingInterpolation(farAlliedIntakePose.getHeading()) //this might be sketchy if not constant w/a known value
-                .build();
 
         reset();
     }
@@ -127,6 +97,10 @@ public class BaseTeleOp extends CommandOpMode {
         if (gamepad2.bWasPressed()){
             schedule(robot.correctHeading);
         }
+        if (gamepad2.xWasPressed()){
+            robot.follower.setPose(robot.limelight.getMt1Pose());
+        }
+        //TODO copy engineer controls, intake lift, KS
 
         //todo path following, make individual commands in Robot class to set priority, etc
 //        if (gamepad1.yWasPressed()){
@@ -157,22 +131,16 @@ public class BaseTeleOp extends CommandOpMode {
         }
 
         //*telemetry
+
         telemetry.addLine(robot.shooter.closeMode ? "----CLOSE----" : "||||FAR||||");
         telemetry.addLine(robot.autoAiming ? "AUTOAIM ON" : "Autoaim off");
         telemetry.addData("ball amount: ", robot.beamBreaks.getBallCount());
-//        telemetry.addData("top pressed: ", robot.beamBreaks.top.isPressed());
-//        telemetry.addData("middle pressed: ", robot.beamBreaks.middle.isPressed());
-//        telemetry.addData("bottom pressed: ", robot.beamBreaks.bottom.isPressed());
-        //telemetry.addData("angle error: ", (robot.getOdoAngleErrorDeg()));
-//        telemetry.addData("angle: ", (Math.toDegrees(robot.follower.getPose().getHeading())));
-        telemetry.addLine(Scheduler.isRunning(robot.shoot) ? "shooting" : "not shooting");
-        telemetry.addLine(Scheduler.isRunning(robot.handleIntake) ? "manual intake" : "not manual intake");
-        telemetry.addLine(Scheduler.isRunning(robot.handleGate) ? "auto gate" : "not auto gate");
-        telemetry.addLine(Scheduler.isRunning(robot.startManualDrive) ? "manual drive" : "not manual drive");
-        telemetry.addData("distance to goal: ", robot.getDistToGoal());
         telemetry.addData("Pose: ", robot.follower.getPose());
-        telemetry.addLine(Scheduler.isRunning(robot.aimAndStoreHeading()) ? "odo aim" : "");
-        telemetry.addLine(Scheduler.isRunning(robot.correctHeadingWithLimelight()) ? "ll aim" : "");
+        telemetry.addData("Goal Pose: ", robot.goalPose);
+        telemetry.addData("angle: ", Math.toDegrees(robot.follower.getPose().getHeading()));
+        telemetry.addData("angle error: ", (robot.getOdoAngleErrorDeg(false)));
+        telemetry.addData("distance to goal: ", robot.getDistToGoal());
+
 
         //lab todo add automated drive controls from old code
 

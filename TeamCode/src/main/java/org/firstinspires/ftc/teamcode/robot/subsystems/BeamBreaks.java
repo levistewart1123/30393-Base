@@ -86,7 +86,10 @@ public class BeamBreaks {
         } else if (balls == 1) {
             prism.loadAnimationsFromArtboard(GoBildaPrismDriver.Artboard.ARTBOARD_2);
         } else if (balls == 0) {
-            prism.loadAnimationsFromArtboard(GoBildaPrismDriver.Artboard.ARTBOARD_0);
+            prism.loadAnimationsFromArtboard(GoBildaPrismDriver.Artboard.ARTBOARD_1);
         }
+    }
+    public void setArtboard(GoBildaPrismDriver.Artboard artboard){
+
     }
 }
