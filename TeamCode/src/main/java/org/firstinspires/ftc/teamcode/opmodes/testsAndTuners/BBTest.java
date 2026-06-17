@@ -24,6 +24,8 @@ public class BBTest extends CommandOpMode {
     @Override
     public void loop() {
         beamBreaks.updatePrism(false, false);
+        telemetry.addData("balls: ", beamBreaks.getBallCount());
+        telemetry.addData("bottom: ", beamBreaks.bottom.isPressed());
         super.loop();
     }
 

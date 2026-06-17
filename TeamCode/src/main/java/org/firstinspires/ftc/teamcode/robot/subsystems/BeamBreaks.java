@@ -16,7 +16,7 @@ public class BeamBreaks {
     GoBildaPrismDriver prism;
     boolean timerRun = false;
 
-    private final Timing.Timer timer = new Timing.Timer(300, TimeUnit.MILLISECONDS);
+    private final Timing.Timer timer = new Timing.Timer(200, TimeUnit.MILLISECONDS);
     boolean topWasPressed, middleWasPressed, bottomWasPressed = false;
 
 
@@ -37,14 +37,14 @@ public class BeamBreaks {
     public int getBallCount(){
         int ballAmount = 0;
         if (bottom.isPressed() && topWasPressed && middleWasPressed){
-            if (!timerRun && timer.done()){
+            if (!timerRun){
                 timer.start();
                 timerRun = true;
-            }
-            if (timer.done()) {
+            } else if (timer.done()) {
                 bottomWasPressed = true;
             }
         }
+
         if (middle.isPressed() && topWasPressed){
             middleWasPressed = true;
         }
@@ -80,16 +80,16 @@ public class BeamBreaks {
         } else if (autoAim) {
             prism.loadAnimationsFromArtboard(GoBildaPrismDriver.Artboard.ARTBOARD_5);
         } else if (balls == 3){
-            prism.loadAnimationsFromArtboard(GoBildaPrismDriver.Artboard.ARTBOARD_4);
+            prism.loadAnimationsFromArtboard(GoBildaPrismDriver.Artboard.ARTBOARD_4);//never reached
         } else if (balls == 2) {
             prism.loadAnimationsFromArtboard(GoBildaPrismDriver.Artboard.ARTBOARD_3);
         } else if (balls == 1) {
-            prism.loadAnimationsFromArtboard(GoBildaPrismDriver.Artboard.ARTBOARD_2);
+            prism.loadAnimationsFromArtboard(GoBildaPrismDriver.Artboard.ARTBOARD_2);//change
         } else if (balls == 0) {
             prism.loadAnimationsFromArtboard(GoBildaPrismDriver.Artboard.ARTBOARD_1);
         }
     }
     public void setArtboard(GoBildaPrismDriver.Artboard artboard){
-
+        prism.loadAnimationsFromArtboard(artboard);
     }
 }
