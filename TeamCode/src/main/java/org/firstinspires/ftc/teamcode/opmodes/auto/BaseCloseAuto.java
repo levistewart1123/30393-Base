@@ -58,7 +58,6 @@ public class BaseCloseAuto extends CommandOpMode {
         middleSpikeMarkStartHeading = 170;
 
 
-
         //Pose FinalShoot = new Pose(47.4,115.0, Math.toRadians(150.4));
         if (isRed) {
             start = start.mirror();
