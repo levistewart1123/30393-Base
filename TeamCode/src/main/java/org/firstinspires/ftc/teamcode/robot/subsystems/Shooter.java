@@ -63,7 +63,7 @@ public class Shooter {
         );
         flywheels.setRunMode(Motor.RunMode.VelocityControl);
 
-        flywheels.setVeloCoefficients(20, 0, 0);//maybe retune kP
+        flywheels.setVeloCoefficients(5, 0, 0);//maybe retune kP
         flywheels.setFeedforwardCoefficients(350, 1.26); //robot todo use recalc
 
         gate = new ServoEx(hwMap, "Gate");

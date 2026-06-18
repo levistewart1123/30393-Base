@@ -58,17 +58,17 @@ public class Robot {
     public boolean autoAiming = false;
     public boolean limelightAim = false;
     public Pose goalPose;
-    public Pose redGoal = new Pose(139, 139);
+    public Pose redGoal = new Pose(141, 138);
     public Pose hpz;
     public Pose redHpz = new Pose(10.5, 10.5, 0);
     double forwardInput, rightInput, rotateInput = 0;
     public boolean isShooting = false;
     public boolean slowDrive = false;
     public boolean aimOnly = false;
-    public static double headingKP = 0.025;
+    public static double headingKP = 0.02;
     public static double headingKI = 0;
     public static double headingKD = 0.02;
-    public static double headingKF = 0.025;
+    public static double headingKF = 0.03;
     public boolean isRed;
     public boolean closeMode;
     private double savedOdoAngleDeg;
@@ -118,7 +118,7 @@ public class Robot {
             if (limelightAim && limelight.canSeeGoal()) {
                 follower.setTeleOpDrive(forwardInput, rightInput, getAimingPIDFOutput(limelight.getTx()));
             } else {
-                follower.setTeleOpDrive(forwardInput, rightInput, getAimingPIDFOutput(getOdoAngleErrorDeg(true)));
+                follower.setTeleOpDrive(forwardInput, rightInput, getAimingPIDFOutput(getOdoAngleErrorDeg(false)));
             }
         } else {
             follower.setTeleOpDrive(forwardInput, rightInput, rotateInput);
@@ -224,7 +224,7 @@ public class Robot {
                 }
                 switch (intakeState) {
                     case IN:
-                        if (shooter.gateIsClosed()) {
+                        if (beamBreaks.getBallCount() != 3) {
                             intake.spinIn();
                         }
                         break;
@@ -346,7 +346,7 @@ public class Robot {
 
     public Pose getSotmOffset(){
         Vector velocity = follower.getVelocity();
-        double seconds = shooter.secShotTakes.get(getDistToGoal());
+        double seconds = /*shooter.secShotTakes.get(getDistToGoal())*/0.5;
         return new Pose(
                 goalPose.getX() + velocity.getXComponent(),
                 goalPose.getY() + velocity.getYComponent()

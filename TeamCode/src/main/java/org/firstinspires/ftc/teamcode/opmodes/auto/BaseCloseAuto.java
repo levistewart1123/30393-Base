@@ -25,8 +25,8 @@ public class BaseCloseAuto extends CommandOpMode {
     public BaseCloseAuto(boolean isRed){
         this.isRed = isRed;
     }
-    public Pose start, shoot, gateCollect, spikeMarkTop, spikeMarkMiddle, spikeMarkBottom, midSpikeControl, midShootControl, topSpikeControl;
-    public PathChain startToShoot, shootToSpikeMarkTop, shootToSpikeMarkMiddle, shootToSpikeMarkBottom, shootToGateCollect, spikeMarkTopToShoot, spikeMarkMiddleToShoot, spikeMarkBottomToShoot, gateCollectToShoot;
+    public Pose start, shoot, leave, gateCollect, spikeMarkTop, spikeMarkMiddle, spikeMarkBottom, midSpikeControl, midShootControl, topSpikeControl;
+    public PathChain shootToLeave, startToShoot, shootToSpikeMarkTop, shootToSpikeMarkMiddle, shootToSpikeMarkBottom, shootToGateCollect, spikeMarkTopToShoot, spikeMarkMiddleToShoot, spikeMarkBottomToShoot, gateCollectToShoot;
 
     protected Command startIntaking = parallel(
             robot.shooter.close,
@@ -40,16 +40,17 @@ public class BaseCloseAuto extends CommandOpMode {
 
     public void buildPaths(boolean isRed) {
 
-        gateCollect = new Pose(14.4, 58.2, Math.toRadians(144.9));
-        spikeMarkTop = new Pose(22.1, 82.7, Math.toRadians(180));
+        gateCollect = new Pose(14.4, 59.2, Math.toRadians(144.9));
+        spikeMarkTop = new Pose(22.1, 83.7, Math.toRadians(180));
         spikeMarkMiddle = new Pose(15.0, 55.5, Math.toRadians(180));
         spikeMarkBottom = new Pose(11.6, 40, Math.toRadians(180));
-
         start = new Pose(22.3, 120.2, Math.toRadians(139.4));
         shoot = new Pose(58, 72.9,Math.toRadians(130));
-        midSpikeControl = new Pose(50, 58).mirror();
-        midShootControl = new Pose(50, 58).mirror();
-        topSpikeControl = new Pose(56,85).mirror();
+        leave = new Pose(55, 69,Math.toRadians(130));
+
+        midSpikeControl = new Pose(35.2, 60);
+        midShootControl = new Pose(35.2, 60);
+        topSpikeControl = new Pose(50,83.7);
 
 
 
@@ -69,6 +70,13 @@ public class BaseCloseAuto extends CommandOpMode {
 
         robot.follower.setPose(start);
 
+        shootToLeave = robot.follower.pathBuilder()
+                .addPath(new BezierLine(
+                        shoot,
+                        leave
+                ))
+                .setLinearHeadingInterpolation(shoot.getHeading(), leave.getHeading())
+                .build();
         startToShoot = robot.follower.pathBuilder()
                 .addPath(new BezierLine(
                         start,
@@ -90,7 +98,7 @@ public class BaseCloseAuto extends CommandOpMode {
                         midSpikeControl,
                         spikeMarkMiddle
                 ))
-                .setLinearHeadingInterpolation(shoot.getHeading(), spikeMarkMiddle.getHeading())
+                .setLinearHeadingInterpolation(Math.toRadians(170)/*!not shoot's heading*/, spikeMarkMiddle.getHeading())
                 .build();
         shootToSpikeMarkBottom = robot.follower.pathBuilder()
                 .addPath(new BezierLine(
@@ -147,6 +155,7 @@ public class BaseCloseAuto extends CommandOpMode {
     @Override
     public void start() {
         schedule(sequential(
+                race(sequential(
                 robot.shooter.open,
                 parallel(waitMs(3000), follow(robot.follower, startToShoot)),
                 robot.fastShoot,
@@ -163,12 +172,17 @@ public class BaseCloseAuto extends CommandOpMode {
                         parallel(follow(robot.follower, gateCollectToShoot), prepareShoot),
                         robot.fastShoot
                         ),
-                        3),
+                        2),
                 startIntaking,
                 follow(robot.follower, shootToSpikeMarkTop),
                 parallel(follow(robot.follower, spikeMarkTopToShoot), prepareShoot),
                 robot.fastShoot
-                )
+                ),
+                        waitMs(29800)
+                ),
+                follow(robot.follower, shootToLeave)
+
+        )
         );
         super.start();
     }
