@@ -40,9 +40,10 @@ public class BaseCloseAuto extends CommandOpMode {
 
     public void buildPaths(boolean isRed) {
 
-        gateCollect = new Pose(14.4, 59.2, Math.toRadians(144.9));
-        spikeMarkTop = new Pose(22.1, 83.7, Math.toRadians(180));
-        spikeMarkMiddle = new Pose(15.0, 55.5, Math.toRadians(180));
+        // blue points
+        gateCollect = new Pose(14.4, 59.2, Math.toRadians(146));
+        spikeMarkTop = new Pose(21.5, 83.7, Math.toRadians(180));
+        spikeMarkMiddle = new Pose(14.0, 55.5, Math.toRadians(180));
         spikeMarkBottom = new Pose(11.6, 40, Math.toRadians(180));
         start = new Pose(22.3, 120.2, Math.toRadians(139.4));
         shoot = new Pose(58, 72.9,Math.toRadians(130));
@@ -55,7 +56,7 @@ public class BaseCloseAuto extends CommandOpMode {
 
 
         //Pose FinalShoot = new Pose(47.4,115.0, Math.toRadians(150.4));
-        if (!isRed) {
+        if (isRed) {
             start.mirror();
             shoot.mirror();
             gateCollect.mirror();
@@ -157,8 +158,9 @@ public class BaseCloseAuto extends CommandOpMode {
         schedule(sequential(
                 race(sequential(
                 robot.shooter.open,
-                parallel(waitMs(3000), follow(robot.follower, startToShoot)),
+                parallel(waitMs(3000), follow(robot.follower, startToShoot, true)),
                 robot.fastShoot,
+                waitMs(100),
                 startIntaking,
                 follow(robot.follower, shootToSpikeMarkMiddle),
                 parallel(follow(robot.follower, spikeMarkMiddleToShoot), prepareShoot),
@@ -167,12 +169,12 @@ public class BaseCloseAuto extends CommandOpMode {
                         startIntaking,
                         deadline(
                             race(waitMs(5000), waitUntil(() -> robot.beamBreaks.getBallCount() == 3)), //todo change to waitUntil with beam breaks
-                            follow(robot.follower, shootToGateCollect)
+                            follow(robot.follower, shootToGateCollect, 0.85)
                         ),
                         parallel(follow(robot.follower, gateCollectToShoot), prepareShoot),
                         robot.fastShoot
                         ),
-                        2),
+                        3),
                 startIntaking,
                 follow(robot.follower, shootToSpikeMarkTop),
                 parallel(follow(robot.follower, spikeMarkTopToShoot), prepareShoot),
