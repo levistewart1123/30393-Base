@@ -62,7 +62,7 @@ public class BaseCloseAuto extends CommandOpMode {
         if (isRed) {
             start = start.mirror();
             shoot = shoot.mirror();
-            gateCollect = new Pose(135, 55.5, Math.toRadians(0));//tochange may need to change on game field at event.
+            gateCollect = new Pose(129.6, 59.2, Math.toRadians(34));//tochange may need to change on game field at event.
             spikeMarkTop = spikeMarkTop.mirror();
             spikeMarkMiddle = spikeMarkMiddle.mirror();
             spikeMarkBottom = spikeMarkBottom.mirror();
