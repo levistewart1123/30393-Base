@@ -62,7 +62,7 @@ public class BaseCloseAuto extends CommandOpMode {
         if (isRed) {
             start = start.mirror();
             shoot = shoot.mirror();
-            gateCollect = gateCollect.mirror();//! may need to change on game field ata event.
+            gateCollect = new Pose(135, 55.5, Math.toRadians(0));//tochange may need to change on game field at event.
             spikeMarkTop = spikeMarkTop.mirror();
             spikeMarkMiddle = spikeMarkMiddle.mirror();
             spikeMarkBottom = spikeMarkBottom.mirror();
@@ -103,7 +103,7 @@ public class BaseCloseAuto extends CommandOpMode {
                         midSpikeControl,
                         spikeMarkMiddle
                 ))
-                .setLinearHeadingInterpolation(Math.toRadians(middleSpikeMarkStartHeading)/*!not shoot's heading*/, spikeMarkMiddle.getHeading())//170
+                .setLinearHeadingInterpolation(Math.toRadians(middleSpikeMarkStartHeading)/*!not shoot's heading*/, spikeMarkMiddle.getHeading())
                 .build();
         shootToSpikeMarkBottom = robot.follower.pathBuilder()
                 .addPath(new BezierLine(
