@@ -16,6 +16,7 @@ import com.pedropathing.geometry.Pose;
 import com.pedropathing.ivy.Command;
 import com.pedropathing.paths.PathChain;
 
+import org.firstinspires.ftc.teamcode.PoseSaver;
 import org.firstinspires.ftc.teamcode.opmodes.CommandOpMode;
 import org.firstinspires.ftc.teamcode.robot.Robot;
 import org.firstinspires.ftc.teamcode.robot.subsystems.HuskyLens;
@@ -27,6 +28,7 @@ public class NewBaseFarAuto extends CommandOpMode {
     public NewBaseFarAuto(boolean isRed){
         this.isRed = isRed;
     }
+
     public Pose start, shoot, farLowHPCollect, farHighHPCollect, spikeMarkBottom, sideDetermine;
     public PathChain startToShoot, sideDetermineToFarLowHPCollect, sideDetermineToFarHighHPCollect, farHighHPCollectToShoot, farLowHPCollectToShoot, shootToSpikeMarkBottom,spikeMarkBottomToShoot, shootToSideDetermine;
 
@@ -130,6 +132,7 @@ public class NewBaseFarAuto extends CommandOpMode {
             follow(robot.follower, farLowHPCollectToShoot, true),
             humanPlayerZoneBack = follow(robot.follower, farHighHPCollectToShoot, true)
     );
+
     public Command determineSide = lazy(() -> {
         double sNumber = HuskyLens.sideNumber();
         return instant(() -> lowHPPickup = (sNumber != -1));
@@ -191,12 +194,13 @@ public class NewBaseFarAuto extends CommandOpMode {
     @Override
     public void loop() {
         robot.update(0,0,0);
-
         super.loop();
     }
 
     @Override
     public void stop() {
+        PoseSaver.autoWasRun = true;
+        PoseSaver.endPose = robot.follower.getPose();
         super.stop();
     }
 }
