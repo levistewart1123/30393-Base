@@ -60,7 +60,7 @@ public class Robot {
     public boolean autoAiming = false;
     public boolean limelightAim = false;
     public Pose goalPose;
-    public Pose redGoal = new Pose(141, 138);
+    public Pose redGoal = new Pose(138, 138);
     public Pose hpz;
     public Pose redHpz = new Pose(10.5, 10.5, 0);
     double forwardInput, rightInput, rotateInput = 0;
@@ -196,7 +196,7 @@ public class Robot {
      * chooses which shoot method to use based on gate (only false)
      */
     public Command shoot = conditional(
-            () -> false, //!fixme
+            () -> shooter.isOpen(),
             fastShoot,
             slowShoot
     )
@@ -225,11 +225,11 @@ public class Robot {
      */
     public Command handleIntake = infinite(
             () -> {
-                if (beamBreaks.getBallCount() == 3){
-                    intake.lift();
-                } else {
-                    intake.lower();
-                }
+//                if (beamBreaks.getBallCount() == 3){
+//                    intake.lift();
+//                } else {
+//                    intake.lower();
+//                }
                 switch (intakeState) {
                     case IN:
                         if (beamBreaks.getBallCount() != 3) {
@@ -279,7 +279,7 @@ public class Robot {
         if (isRed) {
             goalPose = redGoal;
             hpz = redHpz;
-            limelight.setPipeline(0); //!check
+            limelight.setPipeline(0);
         } else {
             goalPose = redGoal.mirror();
             hpz = redHpz.mirror();

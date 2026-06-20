@@ -41,7 +41,7 @@ public class BaseFarAuto extends CommandOpMode {
         spikeMarkBottom = new Pose(11.6, 40, Math.toRadians(180));
 
         start = new Pose(55.6, 7.2, Math.toRadians(90));
-        shoot = new Pose(56.9, 20.6, Math.toRadians(119.5));
+        shoot = new Pose(58, 20, Math.toRadians(117));
         sideDetermineHeading = 180;
         //side determine heading 180
 
@@ -162,7 +162,7 @@ public class BaseFarAuto extends CommandOpMode {
                         //! add Flywheel spinup
                         robot.shooter.open,
                         //waitUntil(robot.fastShooter.getFlywheelVelocity()> robot.fastShooter.targetRPM), //! Flywheel to be at speed
-                        parallel(waitMs(3000), follow(robot.follower, startToShoot, true)),
+                        parallel(waitMs(5000), follow(robot.follower, startToShoot, true)),
                         robot.fastShoot, //* may need to be slow Shoot
                         robot.intake.setIn,
                         follow(robot.follower, shootToSpikeMarkBottom),

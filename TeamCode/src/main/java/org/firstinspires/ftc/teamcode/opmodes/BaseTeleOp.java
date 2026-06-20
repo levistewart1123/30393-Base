@@ -70,7 +70,7 @@ public class BaseTeleOp extends CommandOpMode {
 
         //*shooting
         if (gamepad1.xWasPressed() && (robot.shooter.getFlywheelVelocity() > 0.1)) {
-            schedule(robot.slowShoot);
+            schedule(robot.shoot);
         }
 
         //*close vs. far
@@ -112,18 +112,8 @@ public class BaseTeleOp extends CommandOpMode {
         if (gamepad2.rightBumperWasPressed()){
             robot.follower.setPose(new Pose(robot.follower.getPose().getX(), robot.follower.getPose().getY(), robot.follower.getPose().getHeading() + Math.toRadians(0.5)));
         }
-
-        //TODO copy engineer controls, intake lift
-
-        //todo path following, make individual commands in Robot class to set priority, etc
-//        if (gamepad1.yWasPressed()){
-//            schedule(follow(robot.follower, center.get())
-//                    .setBlockedBehavior(BlockedBehavior.QUEUE)
-//                    .setConflictBehavior(ConflictBehavior.OVERRIDE)
-//                    .setInterruptedBehavior(InterruptedBehavior.END)
-//                    .setPriority(1)
-//                    .requiring(robot.follower))
-//            ;
+//        if (gamepad2.yWasPressed()){
+//            robot.limelightAim = !robot.limelightAim;
 //        }
 
         //*intake
@@ -139,6 +129,7 @@ public class BaseTeleOp extends CommandOpMode {
         //*telemetry
         telemetry.addLine(robot.shooter.closeMode ? "----CLOSE----" : "||||FAR||||");
         telemetry.addLine(robot.autoAiming ? "AUTOAIM ON" : "Autoaim off");
+        telemetry.addLine(robot.limelightAim ? "LIMELIGHT AIM" : "Odo Aim");
         telemetry.addData("ball amount: ", robot.beamBreaks.getBallCount());
         telemetry.addData("Pose: ", robot.follower.getPose());
         telemetry.addData("Goal Pose: ", robot.goalPose);

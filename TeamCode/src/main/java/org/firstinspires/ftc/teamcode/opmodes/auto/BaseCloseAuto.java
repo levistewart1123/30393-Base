@@ -7,13 +7,16 @@ import static com.pedropathing.ivy.groups.Groups.parallel;
 import static com.pedropathing.ivy.groups.Groups.race;
 import static com.pedropathing.ivy.groups.Groups.sequential;
 import static com.pedropathing.ivy.pedro.PedroCommands.follow;
+import static com.seattlesolvers.solverslib.util.MathUtils.normalizeAngle;
 
 import com.pedropathing.geometry.BezierCurve;
 import com.pedropathing.geometry.BezierLine;
 import com.pedropathing.geometry.Pose;
 import com.pedropathing.ivy.Command;
+import com.pedropathing.paths.HeadingInterpolator;
 import com.pedropathing.paths.PathChain;
 
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.teamcode.PoseSaver;
 import org.firstinspires.ftc.teamcode.opmodes.CommandOpMode;
 import org.firstinspires.ftc.teamcode.robot.Robot;
@@ -27,7 +30,7 @@ public class BaseCloseAuto extends CommandOpMode {
 
     public int middleSpikeMarkStartHeading;
 
-    public Pose start, shoot, leave, gateCollect, spikeMarkTop, spikeMarkMiddle, spikeMarkBottom, midSpikeControl, midShootControl, topSpikeControl;
+    public Pose start, shoot, leave, gateCollect, spikeMarkTop, spikeMarkMiddle, spikeMarkBottom, midSpikeControl, midShootControl, topSpikeControl, gateControl;
     public PathChain shootToLeave, startToShoot, shootToSpikeMarkTop, shootToSpikeMarkMiddle, shootToSpikeMarkBottom, shootToGateCollect, spikeMarkTopToShoot, spikeMarkMiddleToShoot, spikeMarkBottomToShoot, gateCollectToShoot;
 
     protected Command startIntaking = parallel(
@@ -41,10 +44,17 @@ public class BaseCloseAuto extends CommandOpMode {
     );
     protected Command gateIntake, gateShoot, gateCycle;
 
+    public double getHeadingToPointsRad(Pose start, Pose end){
+        double xDiff = end.getX() - start.getX();
+        double yDiff = end.getY() - start.getY();
+        double angleFromCoords = Math.atan2(yDiff, xDiff);
+        return normalizeAngle(angleFromCoords, false, AngleUnit.RADIANS);
+    }
+
     public void buildPaths(boolean isRed) {
 
         // blue points
-        gateCollect = new Pose(14.4, 59.2, Math.toRadians(150));
+        gateCollect = new Pose(14.4, 60.5, Math.toRadians(150));
         spikeMarkTop = new Pose(21.5, 83.7, Math.toRadians(180));
         spikeMarkMiddle = new Pose(14.0, 55.5, Math.toRadians(180));
         spikeMarkBottom = new Pose(11.6, 40, Math.toRadians(180));
@@ -55,6 +65,7 @@ public class BaseCloseAuto extends CommandOpMode {
         midSpikeControl = new Pose(35.2, 60);
         midShootControl = new Pose(35.2, 60);
         topSpikeControl = new Pose(50,83.7);
+        gateControl = new Pose(40,60.5);
         middleSpikeMarkStartHeading = 170;
 
 
@@ -71,6 +82,7 @@ public class BaseCloseAuto extends CommandOpMode {
             midSpikeControl = midSpikeControl.mirror();
             midShootControl = midShootControl.mirror();
             topSpikeControl = topSpikeControl.mirror();
+            gateControl = gateControl.mirror();
             middleSpikeMarkStartHeading = 10;
         }
 
@@ -114,18 +126,66 @@ public class BaseCloseAuto extends CommandOpMode {
                 .setLinearHeadingInterpolation(shoot.getHeading(), spikeMarkBottom.getHeading())
                 .build();
         shootToGateCollect = robot.follower.pathBuilder()
-                .addPath(new BezierLine(
+                .addPath(new BezierCurve(
                         shoot,
+                        gateControl,
                         gateCollect
                 ))
                 .setLinearHeadingInterpolation(shoot.getHeading(), gateCollect.getHeading())
+//                .setHeadingInterpolation(HeadingInterpolator.piecewise(
+//                                new HeadingInterpolator.PiecewiseNode(
+//                                        0,
+//                                        0.1,
+//                                        HeadingInterpolator.linear(shoot.getHeading(), getHeadingToPointsRad(shoot, gateCollect))
+//                                ),
+//                                new HeadingInterpolator.PiecewiseNode(
+//                                        0.1,
+//                                        0.6,
+//                                        HeadingInterpolator.facingPoint(gateCollect)
+//                                ),
+//                                new HeadingInterpolator.PiecewiseNode(
+//                                        0.6,
+//                                        0.75,
+//                                        HeadingInterpolator.linear(getHeadingToPointsRad(shoot, gateCollect), gateCollect.getHeading())
+//                                ),
+//                                new HeadingInterpolator.PiecewiseNode(
+//                                        0.75,
+//                                        1,
+//                                        HeadingInterpolator.constant(gateCollect.getHeading())
+//                                )
+//                        )
+//                )
                 .build();
         gateCollectToShoot = robot.follower.pathBuilder()
-                .addPath(new BezierLine(
+                .addPath(new BezierCurve(
                         gateCollect,
+                        gateControl,
                         shoot
                 ))
                 .setLinearHeadingInterpolation(gateCollect.getHeading(), shoot.getHeading())
+//                .setHeadingInterpolation(HeadingInterpolator.piecewise(
+//                                new HeadingInterpolator.PiecewiseNode(
+//                                        0,
+//                                        0.25,
+//                                        HeadingInterpolator.constant(gateCollect.getHeading())
+//                                ),
+//                                new HeadingInterpolator.PiecewiseNode(
+//                                        0.25,
+//                                        0.4,
+//                                        HeadingInterpolator.linear(gateCollect.getHeading(), getHeadingToPointsRad(shoot, gateCollect))
+//                                ),
+//                                new HeadingInterpolator.PiecewiseNode(
+//                                        0.1,
+//                                        0.6,
+//                                        HeadingInterpolator.facingPoint(gateCollect)
+//                                ),
+//                                new HeadingInterpolator.PiecewiseNode(
+//                                        0.6,
+//                                        1,
+//                                        HeadingInterpolator.linear(getHeadingToPointsRad(shoot, gateCollect), shoot.getHeading())
+//                                )
+//                        )
+//                )
                 .build();
         spikeMarkTopToShoot = robot.follower.pathBuilder()
                 .addPath(new BezierLine(
@@ -190,7 +250,7 @@ public class BaseCloseAuto extends CommandOpMode {
                                         parallel(follow(robot.follower, spikeMarkMiddleToShoot), prepareShoot),
                                         robot.fastShoot, //8.87
                                         race(
-                                                waitMs(12000),
+                                                waitMs(13000),
                                                 sequential(
                                                         gateIntake,
                                                         gateShoot,

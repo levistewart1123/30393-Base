@@ -6,13 +6,14 @@ import com.pedropathing.follower.Follower;
 import com.pedropathing.geometry.Pose;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
+import org.firstinspires.ftc.teamcode.PoseSaver;
 import org.firstinspires.ftc.teamcode.opmodes.CommandOpMode;
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 import org.firstinspires.ftc.teamcode.robot.Robot;
 import org.firstinspires.ftc.teamcode.robot.subsystems.Shooter;
 
 @Configurable
-@TeleOp(name = "Auto RPM Tuner", group = "1: tuners")
+@TeleOp(name = "Auto RPM Tuner (start at center)", group = "1: tuners")
 public class AutoRPMTuner extends CommandOpMode {
     public static double power = 0;
     public static double hoodPos = 0.25;
@@ -22,6 +23,7 @@ public class AutoRPMTuner extends CommandOpMode {
     public void init() {
         super.init();
         robot.initialize(true, hardwareMap);
+        PoseSaver.autoWasRun = false;
     }
 
     @Override

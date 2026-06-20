@@ -73,15 +73,15 @@ public class Shooter {
         closeAngles.add(91.7, 0.5);
         closeAngles.add(100.6, 0.7);
         closeAngles.createLUT();
-        farVelocities.add(0, 0.73);
-        farVelocities.add(129, 0.73);
-        farVelocities.add(136.83, 0.75);
-        farVelocities.add(155.08, 0.78);//hood 0.9
+        farVelocities.add(0, 0.68);
+        farVelocities.add(128.2, 0.68);
+        farVelocities.add(135, 0.68);
+        farVelocities.add(155.08, 0.73);
         farVelocities.createLUT();
-        farAngles.add(0, 0.9);
-        farAngles.add(129, 0.9);
-        farAngles.add(136.83, 0.9);
-        farAngles.add(155, 0.9);
+        farAngles.add(0, 0.65);
+        farAngles.add(129, 0.65);
+        farAngles.add(136.83, 0.65);
+        farAngles.add(155, 0.65);
         farAngles.createLUT();
         secShotTakes.add(95.3,0.4);
         secShotTakes.add(75,0.4);
@@ -130,6 +130,9 @@ public class Shooter {
     }
     public void runWithPIDF(double power){ //-1 to 1
         flywheels.set(power);
+    }
+    public boolean isOpen(){
+        return gate.get() == 0;
     }
     public void setFlywheelCoeffs(double kP, double kI, double kD, double kS, double kV, double kA){ //0.55, 55.90
         flywheels.setVeloCoefficients(kP, kI, kD);
