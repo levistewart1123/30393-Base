@@ -29,10 +29,10 @@ public class BaseFarAuto extends CommandOpMode {
         this.isRed = isRed;
     }
     public Pose start, shoot, farLowHPCollect, farHighHPCollect, spikeMarkBottom;
-    public PathChain startToShoot, sideDetermineToFarLowHPCollect, sideDetermineToFarHighHPCollect, farHighHPCollectToShoot, farLowHPCollectToShoot, shootToSpikeMarkBottom,spikeMarkBottomToShoot, shootToSideDetermine;
+    public PathChain startToShoot, sideDetermineToFarLowHPCollect, sideDetermineToFarHighHPCollect, farHighHPCollectToShoot, farLowHPCollectToShoot, shootToSpikeMarkBottom,spikeMarkBottomToShoot;
     protected Command startIntaking, prepareShoot, humanPlayerZoneTo, humanPlayerZoneBack, determineSide;
 
-    public int sideDetermineheading;
+    public int sideDetermineHeading;
 
 
     public void buildPaths(boolean isRed) {
@@ -42,7 +42,7 @@ public class BaseFarAuto extends CommandOpMode {
 
         start = new Pose(55.6, 7.2, Math.toRadians(90));
         shoot = new Pose(56.9, 20.6, Math.toRadians(119.5));
-        sideDetermineheading = 180;
+        sideDetermineHeading = 180;
         //side determine heading 180
 
         //Pose FinalShoot = new Pose(47.4,115.0, Math.toRadians(150.4));
@@ -52,7 +52,7 @@ public class BaseFarAuto extends CommandOpMode {
             farLowHPCollect = farLowHPCollect.mirror();
             farHighHPCollect = farHighHPCollect.mirror();
             spikeMarkBottom = spikeMarkBottom.mirror();
-            sideDetermineheading = 0;
+            sideDetermineHeading = 0;
         }
 
         startToShoot = robot.follower.pathBuilder()
@@ -81,14 +81,14 @@ public class BaseFarAuto extends CommandOpMode {
                         shoot,
                         farLowHPCollect
                 ))
-                .setLinearHeadingInterpolation(Math.toRadians(sideDetermineheading), farLowHPCollect.getHeading())
+                .setLinearHeadingInterpolation(Math.toRadians(sideDetermineHeading), farLowHPCollect.getHeading())
                 .build();
         sideDetermineToFarHighHPCollect = robot.follower.pathBuilder()
                 .addPath(new BezierLine(
                         shoot,
                         farHighHPCollect
                 ))
-                .setLinearHeadingInterpolation(Math.toRadians(sideDetermineheading), farHighHPCollect.getHeading())
+                .setLinearHeadingInterpolation(Math.toRadians(sideDetermineHeading), farHighHPCollect.getHeading())
                 .build();
         farHighHPCollectToShoot = robot.follower.pathBuilder()
                 .addPath(new BezierLine(
@@ -122,7 +122,7 @@ public class BaseFarAuto extends CommandOpMode {
         humanPlayerZoneBack = conditional(
                 () -> lowHPPickup,
                 follow(robot.follower, farLowHPCollectToShoot, true),
-                humanPlayerZoneBack = follow(robot.follower, farHighHPCollectToShoot, true)
+                follow(robot.follower, farHighHPCollectToShoot, true)
         );
         determineSide = lazy(() -> {
                     double sNumber = HuskyLens.sideNumber();
@@ -179,7 +179,7 @@ public class BaseFarAuto extends CommandOpMode {
                         robot.shooter.open,
                         robot.fastShoot, //* may need to be slow Shoot
 
-                        turnTo(robot.follower, Math.toRadians(sideDetermineheading)),
+                        turnTo(robot.follower, Math.toRadians(sideDetermineHeading)),
                         determineSide,
                         robot.intake.setIn,
                         race(humanPlayerZoneTo, waitMs(2000)),
@@ -189,7 +189,7 @@ public class BaseFarAuto extends CommandOpMode {
                         robot.shooter.open,
                         robot.fastShoot, //* may need to be slow Shoot
 
-                        turnTo(robot.follower, Math.toRadians(sideDetermineheading)),
+                        turnTo(robot.follower, Math.toRadians(sideDetermineHeading)),
                         determineSide,
                         robot.intake.setIn,
                         race(humanPlayerZoneTo, waitMs(2000)),
@@ -205,7 +205,7 @@ public class BaseFarAuto extends CommandOpMode {
     @Override
     public void loop() {
         robot.update(0,0,0);
-
+        telemetry.addData("Low Pickup? ", lowHPPickup);
         super.loop();
     }
 

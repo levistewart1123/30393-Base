@@ -16,7 +16,7 @@ import org.firstinspires.ftc.teamcode.robot.subsystems.Shooter;
 public class AutoRPMTuner extends CommandOpMode {
     public static double power = 0;
     public static double hoodPos = 0.25;
-    private Robot robot = new Robot();
+    private final Robot robot = new Robot();
 
     @Override
     public void init() {

@@ -54,6 +54,9 @@ public class Robot {
     public BeamBreaks beamBreaks = new BeamBreaks();
     public Kickstand kickstand = new Kickstand();
     public Limelight limelight = new Limelight();
+    /**
+     * if the robot should automatically aim to the goal.
+     */
     public boolean autoAiming = false;
     public boolean limelightAim = false;
     public Pose goalPose;
@@ -100,6 +103,7 @@ public class Robot {
                 })
                 ;
     }
+    @Deprecated
     public Command correctHeading = sequential(
             aimAndStoreHeading(),
             waitMs(1000),
@@ -284,43 +288,42 @@ public class Robot {
         follower.update();
     }
 
+    /**
+     * gets the distance from the follower's current pose to the goal
+     * @return the distance from the robot to the goal
+     */
     public double getDistToGoal() {
         double xDiff = follower.getPose().getX() - goalPose.getX();
         double yDiff = follower.getPose().getY() - goalPose.getY();
         return Math.sqrt(Math.pow(xDiff, 2) + Math.pow(yDiff, 2));
     }
 
-    public void update(double f, double r, double t) {
+    /**
+     * updates shooter (autoRPM), beam breaks, limelight, follower, and drive
+     * @param forward forward drive command
+     * @param right strafe drive command
+     * @param clockwise rotate drive command
+     */
+    public void update(double forward, double right, double clockwise) {
         follower.update();
 
         limelight.update();
 
         shooter.update(getDistToGoal());
 
-        //kickstand.update();
-//        if (isShooting && !wasShooting){
-//            storedForward = -f;
-//            storedRight = -r;
-//        }
-//        if (isShooting){
-//            forwardInput = storedForward;
-//            rightInput = storedRight;
-//        } else {
-            forwardInput = -f;
-            rightInput = -r;
-            rotateInput = -t;
-//        }
-//
-//        wasShooting = isShooting;
+        beamBreaks.updatePrism(isShooting, autoAiming);
 
+        //kickstand.update();
+
+            forwardInput = -forward;
+            rightInput = -right;
+            rotateInput = -clockwise;
 
         if (slowDrive) {
             forwardInput *= 0.2;
             rightInput *= 0.2;
             rotateInput *= 0.2;
         }
-
-        beamBreaks.updatePrism(isShooting, autoAiming);
     }
 
     public double getRealAngleToGoalDeg(){
@@ -336,6 +339,11 @@ public class Robot {
         return normalizeAngle(angleFromCoords, false, AngleUnit.DEGREES);
     }
 
+    /**
+     * gets the difference of the follower's angle and the angle it needs to be at to face the goal.
+     * @param sotm if this should use the offset shoot-on-the-move goal pose or the real one
+     * @return the error in degrees
+     */
     public double getOdoAngleErrorDeg(boolean sotm) {
         double targetAngle = sotm ? getAngleToSotmGoalDeg() : getRealAngleToGoalDeg();
         double currentHeading = Math.toDegrees(follower.getPose().getHeading());

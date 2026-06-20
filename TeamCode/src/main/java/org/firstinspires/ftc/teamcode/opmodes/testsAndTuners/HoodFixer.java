@@ -8,7 +8,7 @@ import org.firstinspires.ftc.teamcode.robot.subsystems.Shooter;
 
 @TeleOp(name = "Hood Fixer", group = "1: tuners")
 public class HoodFixer extends CommandOpMode {
-    private Shooter shooter = new Shooter();
+    private final Shooter shooter = new Shooter();
     @Override
     public void init() {
         super.init();

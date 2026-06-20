@@ -6,7 +6,7 @@ import org.firstinspires.ftc.teamcode.opmodes.CommandOpMode;
 import org.firstinspires.ftc.teamcode.robot.subsystems.Shooter;
 @TeleOp
 public class GateEncoderTester extends CommandOpMode {
-    private Shooter shooter = new Shooter();
+    private final Shooter shooter = new Shooter();
     @Override
     public void init() {
         super.init();

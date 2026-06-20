@@ -11,10 +11,6 @@ import com.seattlesolvers.solverslib.hardware.servos.ServoEx;
 public class Intake {
     private MotorEx intake;
     private ServoEx left, right;
-    private final double L_UP = 0.95;
-    private final double R_UP = 0.3;
-    private final double L_DOWN = 0.5;
-    private final double R_DOWN = 0;
 
     public void initialize(HardwareMap hwMap) {
         intake = new MotorEx(hwMap, "Intake", Motor.GoBILDA.RPM_1150);
@@ -51,13 +47,17 @@ public class Intake {
     }
 
     public void lift(){
-        left.set(L_UP);
-        right.set(R_UP);
+        double l_UP = 0.95;
+        left.set(l_UP);
+        double r_UP = 0.3;
+        right.set(r_UP);
     }
 
     public void lower(){
-        left.set(L_DOWN);
-        right.set(R_DOWN);
+        double l_DOWN = 0.5;
+        left.set(l_DOWN);
+        double r_DOWN = 0;
+        right.set(r_DOWN);
     }
 
     public Command lift = instant(this::lift)

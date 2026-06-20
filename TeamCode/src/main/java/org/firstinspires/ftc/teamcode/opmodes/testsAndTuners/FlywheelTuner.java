@@ -10,7 +10,7 @@ import org.firstinspires.ftc.teamcode.robot.subsystems.Shooter;
 @TeleOp(name = "Flywheel Tuner (Panels)", group = "1: tuners")
 public class FlywheelTuner extends CommandOpMode {
     public static double velocity;
-    private Shooter shooter = new Shooter();
+    private final Shooter shooter = new Shooter();
     public static double kP, kI, kD, kS, kV, kA, power = 0;
 
     @Override

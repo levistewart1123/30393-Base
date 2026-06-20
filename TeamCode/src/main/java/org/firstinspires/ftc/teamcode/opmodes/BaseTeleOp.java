@@ -1,8 +1,5 @@
 package org.firstinspires.ftc.teamcode.opmodes;
 
-import static com.pedropathing.ivy.Scheduler.schedule;
-import static com.pedropathing.ivy.pedro.PedroCommands.follow;
-import static com.pedropathing.ivy.pedro.PedroCommands.turnTo;
 
 import com.pedropathing.geometry.Pose;
 
@@ -89,9 +86,9 @@ public class BaseTeleOp extends CommandOpMode {
             robot.slowDrive = !robot.slowDrive;
         }
         //*aim correction (engineer for now)
-        if (gamepad2.bWasPressed()){
-            schedule(robot.correctHeading);
-        }
+//        if (gamepad2.bWasPressed()){
+//            schedule(robot.correctHeading);
+//        }
         if (gamepad2.xWasPressed()){
             robot.follower.setPose(robot.limelight.getMt1Pose());
         }
@@ -138,16 +135,8 @@ public class BaseTeleOp extends CommandOpMode {
             robot.setIntakeState(Robot.IntakeState.OFF);
         }
 
-        //*close/far toggling
-        if (gamepad1.yWasPressed()){
-            robot.shooter.setClose(true);
-        }
-        if (gamepad1.xWasPressed()){
-            robot.shooter.setClose(false);
-        }
 
         //*telemetry
-
         telemetry.addLine(robot.shooter.closeMode ? "----CLOSE----" : "||||FAR||||");
         telemetry.addLine(robot.autoAiming ? "AUTOAIM ON" : "Autoaim off");
         telemetry.addData("ball amount: ", robot.beamBreaks.getBallCount());

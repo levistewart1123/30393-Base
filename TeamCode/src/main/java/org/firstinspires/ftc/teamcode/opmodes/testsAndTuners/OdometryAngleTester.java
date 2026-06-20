@@ -10,7 +10,7 @@ import org.firstinspires.ftc.teamcode.robot.Robot;
  */
 @TeleOp(name = "Autoaim Test", group = "2: tests")
 public class OdometryAngleTester extends CommandOpMode {
-    private Robot robot = new Robot();
+    private final Robot robot = new Robot();
     @Override
     public void init() {
         super.init();

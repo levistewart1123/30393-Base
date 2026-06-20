@@ -9,7 +9,7 @@ import org.firstinspires.ftc.teamcode.robot.subsystems.Shooter;
 @Configurable
 @TeleOp(name = "Gate Test", group = "2: tests")
 public class GateTest extends CommandOpMode {
-    private Shooter shooter = new Shooter();
+    private final Shooter shooter = new Shooter();
     @Override
     public void init() {
         super.init();

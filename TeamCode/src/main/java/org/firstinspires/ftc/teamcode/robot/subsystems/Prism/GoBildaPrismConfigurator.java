@@ -104,7 +104,7 @@ public class GoBildaPrismConfigurator extends LinearOpMode {
         SET_SPEED,
         FORK_IN_THE_ROAD,
         SAVE_TO_ARTBOARD,
-        COMPLETE;
+        COMPLETE
     }
 
     ConfigState configState = ConfigState.WELCOME_SCREEN;

@@ -1,13 +1,10 @@
 package org.firstinspires.ftc.teamcode.opmodes.auto;
 
-import static com.pedropathing.ivy.commands.Commands.conditional;
-import static com.pedropathing.ivy.commands.Commands.instant;
 import static com.pedropathing.ivy.commands.Commands.waitMs;
 import static com.pedropathing.ivy.commands.Commands.waitUntil;
 import static com.pedropathing.ivy.groups.Groups.deadline;
 import static com.pedropathing.ivy.groups.Groups.parallel;
 import static com.pedropathing.ivy.groups.Groups.race;
-import static com.pedropathing.ivy.groups.Groups.repeat;
 import static com.pedropathing.ivy.groups.Groups.sequential;
 import static com.pedropathing.ivy.pedro.PedroCommands.follow;
 
@@ -15,15 +12,11 @@ import com.pedropathing.geometry.BezierCurve;
 import com.pedropathing.geometry.BezierLine;
 import com.pedropathing.geometry.Pose;
 import com.pedropathing.ivy.Command;
-import com.pedropathing.ivy.Scheduler;
 import com.pedropathing.paths.PathChain;
-import com.seattlesolvers.solverslib.util.Timing;
 
 import org.firstinspires.ftc.teamcode.PoseSaver;
 import org.firstinspires.ftc.teamcode.opmodes.CommandOpMode;
 import org.firstinspires.ftc.teamcode.robot.Robot;
-
-import java.util.concurrent.TimeUnit;
 
 public class BaseCloseAuto extends CommandOpMode {
     protected Robot robot = new Robot();
@@ -31,7 +24,6 @@ public class BaseCloseAuto extends CommandOpMode {
     public BaseCloseAuto(boolean isRed){
         this.isRed = isRed;
     }
-    private Timing.Timer gateCycleTimer = new Timing.Timer(14500, TimeUnit.MILLISECONDS);
 
     public int middleSpikeMarkStartHeading;
 

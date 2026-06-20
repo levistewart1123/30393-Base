@@ -8,7 +8,7 @@ import org.firstinspires.ftc.teamcode.robot.subsystems.Prism.GoBildaPrismDriver;
 
 @TeleOp(name = "Artboard Checker", group = "2: tests")
 public class PrismArtboardFixer extends CommandOpMode {
-    private BeamBreaks beamBreaks = new BeamBreaks();
+    private final BeamBreaks beamBreaks = new BeamBreaks();
     GoBildaPrismDriver.Artboard currentArtboard = GoBildaPrismDriver.Artboard.ARTBOARD_0;
     @Override
     public void init() {

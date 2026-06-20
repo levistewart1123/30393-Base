@@ -34,6 +34,12 @@ public class BeamBreaks {
         prism.loadAnimationsFromArtboard(GoBildaPrismDriver.Artboard.ARTBOARD_7);
     }
 
+    /**
+     * Gets the current amount of balls in the robot.
+     * Remembers which sensors have been pressed rather than reading each time it's called to avoid
+     * false negatives due to holes in balls
+     * @return the amount of balls in the robot
+     */
     public int getBallCount(){
         int ballAmount = 0;
         if (bottom.isPressed() && topWasPressed && middleWasPressed){

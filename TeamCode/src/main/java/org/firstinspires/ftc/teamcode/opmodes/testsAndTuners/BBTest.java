@@ -9,7 +9,7 @@ import org.firstinspires.ftc.teamcode.robot.subsystems.BeamBreaks;
 @Configurable
 @TeleOp(name = "Beam Break Test", group = "2: tests")
 public class BBTest extends CommandOpMode {
-    private BeamBreaks beamBreaks = new BeamBreaks();
+    private final BeamBreaks beamBreaks = new BeamBreaks();
     @Override
     public void init() {
         super.init();

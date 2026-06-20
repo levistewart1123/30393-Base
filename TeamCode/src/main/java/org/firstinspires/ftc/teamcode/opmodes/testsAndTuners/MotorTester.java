@@ -5,6 +5,7 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.teamcode.robot.Robot;
 
+@Deprecated
 @TeleOp(name = "Motor Tester (Old)", group = "2: tests")
 public class MotorTester extends LinearOpMode {
     Robot robot = new Robot();
@@ -36,11 +37,11 @@ public class MotorTester extends LinearOpMode {
         sleep(1000);
         robot.shooter.setHood(1);
         sleep(1000);
-        robot.shooter.runNoPIDF(0.1);
+        robot.shooter.runWithPIDF(0.1);
         telemetry.addLine("flywheels");
         telemetry.update();
         sleep(1000);
-        robot.shooter.runNoPIDF(0);
+        robot.shooter.runWithPIDF(0);
         sleep(1000);
         robot.kickstand.lift();
         telemetry.addLine("kickstand");

@@ -10,7 +10,7 @@ import org.firstinspires.ftc.teamcode.robot.subsystems.Intake;
 @Deprecated
 @TeleOp(name = "Intake Servo Tuner (needs public intake servos)", group = "1: tuners")
 public class IntakeServoTuner extends CommandOpMode {
-    private Intake intake = new Intake();
+    private final Intake intake = new Intake();
     public static double lPos, rPos = 0;
     @Override
     public void init() {
