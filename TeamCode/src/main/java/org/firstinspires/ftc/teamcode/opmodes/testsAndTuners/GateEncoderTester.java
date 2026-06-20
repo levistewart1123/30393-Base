@@ -5,6 +5,7 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import org.firstinspires.ftc.teamcode.opmodes.CommandOpMode;
 import org.firstinspires.ftc.teamcode.robot.subsystems.Shooter;
 @TeleOp
+@Deprecated
 public class GateEncoderTester extends CommandOpMode {
     private final Shooter shooter = new Shooter();
     @Override
@@ -25,7 +26,7 @@ public class GateEncoderTester extends CommandOpMode {
 //        } else {
 //            shooter.openGate();
 //        }
-        telemetry.addData("encoder pos (deg): ", shooter.getGateEncoderPosDeg());
+//        telemetry.addData("encoder pos (deg): ", shooter.getGateEncoderPosDeg());
         super.loop();
     }
 

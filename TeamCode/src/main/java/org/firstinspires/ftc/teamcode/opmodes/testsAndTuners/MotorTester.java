@@ -11,7 +11,7 @@ public class MotorTester extends LinearOpMode {
     Robot robot = new Robot();
 
     @Override
-    public void runOpMode() throws InterruptedException {
+    public void runOpMode() {
         robot.initialize(true, hardwareMap);
         waitForStart();
         robot.follower.startTeleOpDrive();

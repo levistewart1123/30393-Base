@@ -44,7 +44,7 @@ public class BaseCloseAuto extends CommandOpMode {
     public void buildPaths(boolean isRed) {
 
         // blue points
-        gateCollect = new Pose(14.4, 59.2, Math.toRadians(146));
+        gateCollect = new Pose(14.4, 59.2, Math.toRadians(150));
         spikeMarkTop = new Pose(21.5, 83.7, Math.toRadians(180));
         spikeMarkMiddle = new Pose(14.0, 55.5, Math.toRadians(180));
         spikeMarkBottom = new Pose(11.6, 40, Math.toRadians(180));
@@ -66,6 +66,7 @@ public class BaseCloseAuto extends CommandOpMode {
             spikeMarkTop = spikeMarkTop.mirror();
             spikeMarkMiddle = spikeMarkMiddle.mirror();
             spikeMarkBottom = spikeMarkBottom.mirror();
+            leave = leave.mirror();
 
             midSpikeControl = midSpikeControl.mirror();
             midShootControl = midShootControl.mirror();
