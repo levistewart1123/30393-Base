@@ -5,7 +5,6 @@ import static com.pedropathing.ivy.commands.Commands.infinite;
 import static com.pedropathing.ivy.commands.Commands.instant;
 import static com.pedropathing.ivy.commands.Commands.waitMs;
 import static com.pedropathing.ivy.groups.Groups.sequential;
-import static com.pedropathing.ivy.pedro.PedroCommands.follow;
 import static com.seattlesolvers.solverslib.util.MathUtils.normalizeAngle;
 
 import static java.lang.Math.abs;
@@ -64,20 +63,16 @@ public class Robot {
     double forwardInput, rightInput, rotateInput = 0;
     public boolean isShooting = false;
     public boolean slowDrive = false;
-    public boolean aimOnly = false;
     public static double headingKP = 0.02;
     public static double headingKI = 0;
     public static double headingKD = 0.02;
     public static double headingKF = 0.03;
     public boolean isRed;
-    public boolean closeMode;
     private double savedOdoAngleDeg;
-    private double storedForward;
-    private double storedRight;
-    private boolean wasShooting = false;
 
 
     //*movement commands
+
 
     public Command aimAndStoreHeading() {
         return Command.build()
@@ -113,6 +108,10 @@ public class Robot {
             .setPriority(2)
             .setConflictBehavior(ConflictBehavior.OVERRIDE)
             ;
+
+    /**
+     * runs drive based on input from the update method
+     */
     public Command handleDriveInput = infinite(() -> {
         if (autoAiming) {
             if (limelightAim && limelight.canSeeGoal()) {
@@ -124,9 +123,14 @@ public class Robot {
             follower.setTeleOpDrive(forwardInput, rightInput, rotateInput);
         }
     });
+
     Command startTeleOpDrive = instant(() -> follower.startTeleOpDrive());
+
     Command driveOff = instant(() -> follower.setTeleOpDrive(0,0,0));
 
+    /**
+     * starts TeleOp drive, then handles drive input
+     */
     public Command startManualDrive = sequential(
             startTeleOpDrive,
             handleDriveInput
@@ -150,9 +154,6 @@ public class Robot {
 
     Command setAiming(boolean aiming) {
         return instant(() -> autoAiming = aiming);
-    }
-    Command setAimingOnly(boolean aimingOnly) {
-        return instant(() -> aimOnly = aimingOnly);
     }
 
 
@@ -199,7 +200,7 @@ public class Robot {
             .setPriority(2);
     //*other shooter commands
     /**
-     * automatically opens gate using beam breaks
+     * automatically opens gate based on beam breaks
      */
     public Command handleGate = infinite(() -> {
                 if (beamBreaks.getBallCount() == 3 && intakeState != IntakeState.IN) {
@@ -215,6 +216,9 @@ public class Robot {
             .setBlockedBehavior(BlockedBehavior.QUEUE)
             .setConflictBehavior(ConflictBehavior.QUEUE);
 
+    /**
+     * lifts intake automatically and runs intake based on intakeState
+     */
     public Command handleIntake = infinite(
             () -> {
                 if (beamBreaks.getBallCount() == 3){

@@ -130,12 +130,15 @@ public class BaseFarAuto extends CommandOpMode {
         );
     }
 
-    public Command jiggle = instant(() -> {
-        robot.follower.startTeleOpDrive();
-        robot.follower.setTeleOpDrive(-0.7, 0, 0);
-        waitMs(500);
-        robot.follower.setTeleOpDrive(0.7, 0, 0);
-    });
+    public Command jiggle = sequential(
+            instant(() -> {
+                robot.follower.startTeleOpDrive();
+                robot.follower.setTeleOpDrive(-0.7, 0, 0);
+            }),
+            waitMs(500),
+            instant(() -> robot.follower.setTeleOpDrive(0.7, 0, 0)),
+            waitMs(500)
+    );
 
     @Override
     public void init() {

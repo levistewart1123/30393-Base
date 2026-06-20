@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode.opmodes.auto;
 
+import static com.pedropathing.ivy.commands.Commands.conditional;
+import static com.pedropathing.ivy.commands.Commands.instant;
 import static com.pedropathing.ivy.commands.Commands.waitMs;
 import static com.pedropathing.ivy.commands.Commands.waitUntil;
 import static com.pedropathing.ivy.groups.Groups.deadline;
@@ -13,11 +15,15 @@ import com.pedropathing.geometry.BezierCurve;
 import com.pedropathing.geometry.BezierLine;
 import com.pedropathing.geometry.Pose;
 import com.pedropathing.ivy.Command;
+import com.pedropathing.ivy.Scheduler;
 import com.pedropathing.paths.PathChain;
+import com.seattlesolvers.solverslib.util.Timing;
 
 import org.firstinspires.ftc.teamcode.PoseSaver;
 import org.firstinspires.ftc.teamcode.opmodes.CommandOpMode;
 import org.firstinspires.ftc.teamcode.robot.Robot;
+
+import java.util.concurrent.TimeUnit;
 
 public class BaseCloseAuto extends CommandOpMode {
     protected Robot robot = new Robot();
@@ -25,6 +31,7 @@ public class BaseCloseAuto extends CommandOpMode {
     public BaseCloseAuto(boolean isRed){
         this.isRed = isRed;
     }
+    private Timing.Timer gateCycleTimer = new Timing.Timer(14500, TimeUnit.MILLISECONDS);
 
     public int middleSpikeMarkStartHeading;
 
@@ -40,6 +47,7 @@ public class BaseCloseAuto extends CommandOpMode {
             waitMs(500),
             robot.shooter.open
     );
+    protected Command gateIntake, gateShoot, gateCycle;
 
     public void buildPaths(boolean isRed) {
 
@@ -49,8 +57,8 @@ public class BaseCloseAuto extends CommandOpMode {
         spikeMarkMiddle = new Pose(14.0, 55.5, Math.toRadians(180));
         spikeMarkBottom = new Pose(11.6, 40, Math.toRadians(180));
         start = new Pose(22.3, 120.2, Math.toRadians(139.4));
-        shoot = new Pose(58, 72.9,Math.toRadians(130));
-        leave = new Pose(55, 69,Math.toRadians(130));
+        shoot = new Pose(55, 76, Math.toRadians(130));
+        leave = new Pose(55, 69, Math.toRadians(130));
 
         midSpikeControl = new Pose(35.2, 60);
         midShootControl = new Pose(35.2, 60);
@@ -148,6 +156,23 @@ public class BaseCloseAuto extends CommandOpMode {
                 ))
                 .setLinearHeadingInterpolation(spikeMarkBottom.getHeading(), shoot.getHeading())
                 .build();
+
+        gateIntake = sequential(
+                startIntaking,
+                deadline(
+                        race(waitMs(5000), waitUntil(() -> robot.beamBreaks.getBallCount() == 3)), //todo change to waitUntil with beam breaks
+                        follow(robot.follower, shootToGateCollect, 0.85)
+                )
+        );
+        gateShoot = sequential(
+                parallel(follow(robot.follower, gateCollectToShoot), prepareShoot),
+                robot.fastShoot
+        );
+
+        gateCycle = sequential(
+                gateIntake,
+                gateShoot
+        );
     }
     @Override
     public void init() {
@@ -159,36 +184,39 @@ public class BaseCloseAuto extends CommandOpMode {
 
     @Override
     public void start() {
-        schedule(sequential(
-                race(sequential(
-                robot.shooter.open,
-                parallel(waitMs(3000), follow(robot.follower, startToShoot, true)),
-                robot.fastShoot,
-                waitMs(100),
-                startIntaking,
-                follow(robot.follower, shootToSpikeMarkMiddle),
-                parallel(follow(robot.follower, spikeMarkMiddleToShoot), prepareShoot),
-                robot.fastShoot,
-                repeat(sequential(
-                        startIntaking,
-                        deadline(
-                            race(waitMs(5000), waitUntil(() -> robot.beamBreaks.getBallCount() == 3)), //todo change to waitUntil with beam breaks
-                            follow(robot.follower, shootToGateCollect, 0.85)
+        schedule(
+                sequential(
+                        race(
+                                sequential(
+                                        robot.shooter.open,
+                                        parallel(waitMs(3000), follow(robot.follower, startToShoot, true)),
+                                        robot.fastShoot,
+                                        waitMs(100),
+                                        startIntaking,
+                                        follow(robot.follower, shootToSpikeMarkMiddle),
+                                        parallel(follow(robot.follower, spikeMarkMiddleToShoot), prepareShoot),
+                                        robot.fastShoot, //8.87
+                                        race(
+                                                waitMs(12000),
+                                                sequential(
+                                                        gateIntake,
+                                                        gateShoot,
+                                                        gateIntake,
+                                                        gateShoot,
+                                                        gateIntake
+                                                )
+                                        ),
+                                        gateShoot,
+                                        startIntaking, //6.62
+                                        follow(robot.follower, shootToSpikeMarkTop),
+                                        parallel(follow(robot.follower, spikeMarkTopToShoot), prepareShoot),
+                                        robot.fastShoot
+                                ),
+                                waitMs(29500)
                         ),
-                        parallel(follow(robot.follower, gateCollectToShoot), prepareShoot),
-                        robot.fastShoot
-                        ),
-                        3),
-                startIntaking,
-                follow(robot.follower, shootToSpikeMarkTop),
-                parallel(follow(robot.follower, spikeMarkTopToShoot), prepareShoot),
-                robot.fastShoot
-                ),
-                        waitMs(29800)
-                ),
-                follow(robot.follower, shootToLeave)
+                        follow(robot.follower, shootToLeave)
 
-        )
+                )
         );
         super.start();
     }
