@@ -137,7 +137,8 @@ public class BaseFarAuto extends CommandOpMode {
             }),
             waitMs(500),
             instant(() -> robot.follower.setTeleOpDrive(0.7, 0, 0)),
-            waitMs(500)
+            waitMs(500),
+            robot.driveOff
     );
 
     @Override
