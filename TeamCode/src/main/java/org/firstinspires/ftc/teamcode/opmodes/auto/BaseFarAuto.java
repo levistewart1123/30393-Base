@@ -5,8 +5,10 @@ import static com.pedropathing.ivy.commands.Commands.instant;
 import static com.pedropathing.ivy.commands.Commands.lazy;
 import static com.pedropathing.ivy.commands.Commands.waitMs;
 import static com.pedropathing.ivy.groups.Groups.parallel;
+import static com.pedropathing.ivy.groups.Groups.repeat;
 import static com.pedropathing.ivy.groups.Groups.sequential;
 import static com.pedropathing.ivy.pedro.PedroCommands.follow;
+import static com.pedropathing.ivy.pedro.PedroCommands.turnTo;
 
 import com.pedropathing.geometry.BezierLine;
 import com.pedropathing.geometry.Pose;
@@ -29,13 +31,17 @@ public class BaseFarAuto extends CommandOpMode {
     public PathChain startToShoot, sideDetermineToFarLowHPCollect, sideDetermineToFarHighHPCollect, farHighHPCollectToShoot, farLowHPCollectToShoot, shootToSpikeMarkBottom,spikeMarkBottomToShoot, shootToSideDetermine;
     protected Command startIntaking, prepareShoot, humanPlayerZoneTo, humanPlayerZoneBack, determineSide;
 
+    public int sideDetermineheading;
+
+
     public void buildPaths(boolean isRed) {
-        farLowHPCollect = new Pose(10, 4, Math.toRadians(180));
+        farLowHPCollect = new Pose(11, 7, Math.toRadians(180));
         farHighHPCollect = new Pose(10,25.000, Math.toRadians(180));
         spikeMarkBottom = new Pose(11.6, 40, Math.toRadians(180));
 
         start = new Pose(55.6, 7.2, Math.toRadians(90));
         shoot = new Pose(56.9, 20.6, Math.toRadians(118.5));
+        sideDetermineheading = 180;
         //side determine heading 180
 
         //Pose FinalShoot = new Pose(47.4,115.0, Math.toRadians(150.4));
@@ -45,6 +51,7 @@ public class BaseFarAuto extends CommandOpMode {
             farLowHPCollect = farLowHPCollect.mirror();
             farHighHPCollect = farHighHPCollect.mirror();
             spikeMarkBottom = spikeMarkBottom.mirror();
+            sideDetermineheading = 0;
         }
 
         startToShoot = robot.follower.pathBuilder()
@@ -73,14 +80,14 @@ public class BaseFarAuto extends CommandOpMode {
                         shoot,
                         farLowHPCollect
                 ))
-                .setLinearHeadingInterpolation(180, farLowHPCollect.getHeading())
+                .setLinearHeadingInterpolation(Math.toRadians(sideDetermineheading), farLowHPCollect.getHeading())
                 .build();
         sideDetermineToFarHighHPCollect = robot.follower.pathBuilder()
                 .addPath(new BezierLine(
                         shoot,
                         farHighHPCollect
                 ))
-                .setLinearHeadingInterpolation(180, farHighHPCollect.getHeading())
+                .setLinearHeadingInterpolation(Math.toRadians(sideDetermineheading), farHighHPCollect.getHeading())
                 .build();
         farHighHPCollectToShoot = robot.follower.pathBuilder()
                 .addPath(new BezierLine(
@@ -123,10 +130,18 @@ public class BaseFarAuto extends CommandOpMode {
         );
     }
 
+    public Command jiggle = instant(() -> {
+        robot.follower.startTeleOpDrive();
+        robot.follower.setTeleOpDrive(-0.7, 0, 0);
+        waitMs(500);
+        robot.follower.setTeleOpDrive(0.7, 0, 0);
+    });
+
     @Override
     public void init() {
         super.init();
         robot.initialize(isRed, hardwareMap);
+        robot.shooter.closeMode = false;
         telemetry.addData("follower is null?", robot.follower == null);
         telemetry.update();
         buildPaths(isRed);
@@ -136,44 +151,48 @@ public class BaseFarAuto extends CommandOpMode {
     @Override
     public void start() {
         schedule(sequential(
-                //! add Flywheel spinup
-                robot.shooter.open,
-                follow(robot.follower, startToShoot, true),
-                //waitUntil(robot.fastShooter.getFlywheelVelocity()> robot.fastShooter.targetRPM), //! Flywheel to be at speed
-                robot.fastShoot, //* may need to be slow Shoot
-                robot.intake.setIn,
-                follow(robot.follower, shootToSpikeMarkBottom),
-                robot.intake.run(0.5),
-                follow(robot.follower, spikeMarkBottomToShoot),
-                robot.fastShoot, //* may need to be slow Shoot
-                //waitUntil(robot.isShooting == false), //! robot.isShooting is not BooleanSupplier
-                robot.intake.setIn,
-                follow(robot.follower, sideDetermineToFarLowHPCollect),
-                robot.intake.run(0.5),
-                follow(robot.follower, farLowHPCollectToShoot),
-                robot.fastShoot, //* may need to be slow Shoot
-                follow(robot.follower, shootToSideDetermine),
-                determineSide,//TODO make rotate to 90 to get reading
-                robot.intake.setIn,
-                humanPlayerZoneTo,
-                robot.intake.run(0.5),
-                humanPlayerZoneBack,
-                robot.fastShoot, //* may need to be slow Shoot
-                follow(robot.follower, shootToSideDetermine),
-                determineSide,//TODO make rotate to 90 to get reading
-                robot.intake.setIn,
-                humanPlayerZoneTo,
-                robot.intake.run(0.5),
-                humanPlayerZoneBack,
-                robot.fastShoot, //* may need to be slow Shoot
-                follow(robot.follower, shootToSideDetermine),
-                determineSide,//TODO make rotate to 90 to get reading
-                robot.intake.setIn,
-                humanPlayerZoneTo,
-                robot.intake.run(0.5),
-                humanPlayerZoneBack,
-                robot.fastShoot
-        )
+                        //! add Flywheel spinup
+                        robot.shooter.open,
+                        //waitUntil(robot.fastShooter.getFlywheelVelocity()> robot.fastShooter.targetRPM), //! Flywheel to be at speed
+                        parallel(waitMs(3000), follow(robot.follower, startToShoot, true)),
+                        robot.fastShoot, //* may need to be slow Shoot
+                        robot.intake.setIn,
+                        follow(robot.follower, shootToSpikeMarkBottom),
+                        jiggle,
+                        robot.intake.run(0),
+                        parallel(follow(robot.follower, spikeMarkBottomToShoot), prepareShoot),
+                        robot.shooter.open,
+                        robot.fastShoot, //* may need to be slow Shoot
+                        //waitUntil(robot.isShooting == false), //! robot.isShooting is not BooleanSupplier
+                        robot.intake.setIn,
+                        follow(robot.follower, sideDetermineToFarLowHPCollect, 0.6),
+                        jiggle,
+                        robot.intake.run(0),
+                        parallel(follow(robot.follower, farLowHPCollectToShoot), prepareShoot),
+                        robot.shooter.open,
+                        robot.fastShoot, //* may need to be slow Shoot
+
+                        turnTo(robot.follower, Math.toRadians(sideDetermineheading)),
+                        determineSide,
+                        robot.intake.setIn,
+                        humanPlayerZoneTo,
+                        jiggle,
+                        robot.intake.run(0),
+                        parallel(humanPlayerZoneBack, prepareShoot),
+                        robot.shooter.open,
+                        robot.fastShoot, //* may need to be slow Shoot
+
+                        turnTo(robot.follower, Math.toRadians(sideDetermineheading)),
+                        determineSide,
+                        robot.intake.setIn,
+                        humanPlayerZoneTo,
+                        jiggle,
+                        robot.intake.run(0),
+                        parallel(humanPlayerZoneBack, prepareShoot),
+                        jiggle,
+                        robot.shooter.open,
+                        robot.fastShoot //* may need to be slow Shoot
+                )
         );
         super.start();
     }
