@@ -1,31 +1,29 @@
-package org.firstinspires.ftc.teamcode.opmodes.tele;
-
+package org.firstinspires.ftc.teamcode.opmodes.auto;
 
 import org.firstinspires.ftc.teamcode.opmodes.CommandOpMode;
-import org.firstinspires.ftc.teamcode.PoseSaver;
 import org.firstinspires.ftc.teamcode.robot.Robot;
 
-
-/**
- *This is our base TeleOp class.
- * Red and Blue TeleOps that extend this should be created and put on the driver station.
- */
-public class BaseTeleOp extends CommandOpMode {
+public class BaseAuto extends CommandOpMode {
     protected Robot robot = new Robot();
-
     protected boolean isRed;
-    public BaseTeleOp(boolean isRed) {
+    public BaseAuto(boolean isRed){
         this.isRed = isRed;
+    }
+
+    public void buildPaths(){
+
     }
 
     @Override
     public void init() {
         super.init();
+        buildPaths();
         robot.initialize(isRed, hardwareMap);
     }
 
     @Override
     public void start() {
+        robot.update();
         super.start();
     }
 
@@ -35,8 +33,8 @@ public class BaseTeleOp extends CommandOpMode {
         super.loop();
     }
 
-    public void stop(){
-        PoseSaver.autoWasRun = false;
+    @Override
+    public void stop() {
         super.stop();
     }
 }
